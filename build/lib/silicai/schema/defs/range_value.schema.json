@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mageoch/silicai/schema/defs/range_value.schema.json",
+  "title": "Range Value",
+  "description": "A numeric range with an explicit unit",
+  "type": "object",
+  "required": ["min", "max", "unit"],
+  "properties": {
+    "min":  { "type": "number" },
+    "max":  { "type": "number" },
+    "unit": { "type": "string" }
+  },
+  "additionalProperties": false
+}

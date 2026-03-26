@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mageoch/silicai/schema/circuit.schema.json",
+  "title": "SilicAI Circuit",
+  "description": "A circuit design referencing components from a SilicAI component library",
+  "type": "object",
+  "required": ["circuit"],
+  "properties": {
+    "$schema":         { "type": "string" },
+    "$schema_version": { "type": "string" },
+    "circuit": {
+      "type": "object",
+      "required": ["name", "power_rails", "instances"],
+      "properties": {
+        "name":        { "type": "string" },
+        "description": { "type": "string" },
+        "power_rails": {
+          "type": "array",
+          "items": { "$ref": "defs/circuit_power_rail.schema.json" }
+        },
+        "buses": {
+          "type": "array",
+          "items": { "$ref": "defs/circuit_bus.schema.json" }
+        },
+        "instances": {
+          "type": "array",
+          "items": { "$ref": "defs/circuit_instance.schema.json" }
+        }
+      }
+    }
+  }
+}

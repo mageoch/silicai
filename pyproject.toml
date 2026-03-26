@@ -10,4 +10,10 @@ dependencies = [
 ]
 
 [project.scripts]
-silicai-validate = "tools.validate:main"
+silicai-validate = "silicai.validate:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+silicai = ["schema/**/*.json"]

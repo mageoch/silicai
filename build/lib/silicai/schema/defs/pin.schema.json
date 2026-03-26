@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mageoch/silicai/schema/defs/pin.schema.json",
+  "title": "Pin",
+  "type": "object",
+  "required": ["number", "name", "direction"],
+  "properties": {
+    "number":    { "type": "integer" },
+    "name":      { "type": "string" },
+    "direction": {
+      "type": "string",
+      "enum": [
+        "input", "output", "bidirectional", "tri_state",
+        "passive", "open_collector", "open_emitter",
+        "power_in", "power_out", "no_connect"
+      ]
+    },
+    "open_drain":  { "type": "boolean" },
+    "must_connect": { "type": "boolean" },
+    "rail":        { "type": "string" },
+    "net":         { "type": "string" },
+    "voltage_level": { "$ref": "measured_value.schema.json" },
+    "electrical":    { "$ref": "pin_electrical.schema.json" },
+    "primary_function": { "$ref": "pin_function.schema.json" },
+    "alternate_functions": {
+      "type": "array",
+      "items": { "$ref": "alternate_function.schema.json" }
+    },
+    "required_external": {
+      "type": "array",
+      "items": { "$ref": "passive_component.schema.json" }
+    }
+  }
+}

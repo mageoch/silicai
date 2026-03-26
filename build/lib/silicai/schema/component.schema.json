@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mageoch/silicai/schema/component.schema.json",
+  "title": "SilicAI Component",
+  "description": "Structured description of an electronic component for AI-assisted circuit design",
+  "type": "object",
+  "required": ["component"],
+  "properties": {
+    "$schema":         { "type": "string" },
+    "$schema_version": { "type": "string" },
+    "component": {
+      "type": "object",
+      "required": ["mpn", "manufacturer", "category", "package", "pins"],
+      "properties": {
+        "mpn":          { "type": "string" },
+        "manufacturer": { "type": "string" },
+        "category": {
+          "type": "string",
+          "enum": [
+            "mcu", "mpu", "power_ic", "power_discrete",
+            "analog", "logic", "memory", "wireless",
+            "sensor", "passive", "connector", "discrete"
+          ]
+        },
+        "package":   { "type": "string" },
+        "datasheet": { "type": "string", "format": "uri" },
+
+        "specifications":              { "$ref": "defs/specifications.schema.json" },
+        "absolute_maximum_ratings":    { "type": "array", "items": { "$ref": "defs/rating.schema.json" } },
+        "recommended_operating_conditions": { "type": "array", "items": { "$ref": "defs/rating.schema.json" } },
+        "rails":      { "type": "array", "items": { "$ref": "defs/rail.schema.json" } },
+        "pins":       { "type": "array", "items": { "$ref": "defs/pin.schema.json" } },
+        "interfaces": { "type": "array", "items": { "$ref": "defs/interface.schema.json" } }
+      }
+    }
+  }
+}
