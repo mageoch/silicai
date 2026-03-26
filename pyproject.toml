@@ -1,0 +1,12 @@
+[project]
+name = "silicai"
+version = "0.1.0"
+description = "Structured electronic component descriptions for AI-assisted circuit design"
+requires-python = ">=3.11"
+dependencies = [
+    "pyyaml",
+    "jsonschema",
+]
+
+[project.scripts]
+silicai-validate = "tools.validate:main"

@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mageoch/silicai/schema/component.schema.json",
+  "title": "SilicAI Component",
+  "description": "Structured description of an electronic component for AI-assisted circuit design",
+  "type": "object",
+  "required": ["component"],
+  "properties": {
+    "component": {
+      "type": "object",
+      "required": ["mpn", "manufacturer", "category", "package", "datasheet", "pins"],
+      "properties": {
+        "mpn": { "type": "string" },
+        "manufacturer": { "type": "string" },
+        "category": {
+          "type": "string",
+          "enum": ["mcu", "mpu", "power_ic", "power_discrete", "analog", "logic", "memory", "wireless", "sensor", "passive", "connector", "discrete"]
+        },
+        "package": { "type": "string" },
+        "datasheet": { "type": "string", "format": "uri" },
+
+        "rails": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/rail" }
+        },
+
+        "pins": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/pin" }
+        },
+
+        "interfaces": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/interface" }
+        }
+      }
+    }
+  },
+
+  "$defs": {
+    "rail": {
+      "type": "object",
+      "required": ["id", "net"],
+      "properties": {
+        "id": { "type": "string" },
+        "net": { "type": "string" },
+        "type": {
+          "type": "string",
+          "enum": ["power", "internal_node"]
+        },
+        "input_filter": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/passive_component" }
+        },
+        "per_pin_decoupling": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/passive_component" }
+        },
+        "bulk_decoupling": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/passive_component" }
+        }
+      }
+    },
+
+    "pin": {
+      "type": "object",
+      "required": ["number", "name", "direction"],
+      "properties": {
+        "number": { "type": "integer" },
+        "name": { "type": "string" },
+        "direction": {
+          "type": "string",
+          "enum": ["input", "output", "bidirectional", "tri_state", "passive", "open_collector", "open_emitter", "power_in", "power_out", "no_connect"]
+        },
+        "rail": { "type": "string" },
+        "voltage_level": { "type": "string" },
+        "primary_function": { "$ref": "#/$defs/pin_function" },
+        "alternate_functions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/alternate_function" }
+        },
+        "required_external": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/passive_component" }
+        }
+      }
+    },
+
+    "pin_function": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["gpio", "reset", "boot_select", "clock_in", "clock_out", "power", "analog_in", "analog_out", "differential_pair"]
+        },
+        "polarity": { "type": "string", "enum": ["active_high", "active_low"] },
+        "port": { "type": "string" },
+        "bit": { "type": "integer" }
+      }
+    },
+
+    "alternate_function": {
+      "type": "object",
+      "required": ["peripheral", "signal", "direction"],
+      "properties": {
+        "af": {},
+        "peripheral": { "type": "string" },
+        "signal": { "type": "string" },
+        "direction": {
+          "type": "string",
+          "enum": ["input", "output", "bidirectional"]
+        }
+      }
+    },
+
+    "passive_component": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["capacitor", "resistor", "ferrite_bead", "inductor", "crystal", "diode"]
+        },
+        "value": { "type": "string" },
+        "voltage_rating": { "type": "string" },
+        "current_rating": { "type": "string" },
+        "dielectric": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "esr": { "type": "string" },
+        "impedance_at_100mhz": { "type": "string" },
+        "placement": {
+          "type": "string",
+          "enum": ["close", "nearby", "per_pin", "per_component"]
+        },
+        "quantity": {
+          "type": "string",
+          "enum": ["1", "per_pin", "per_component"]
+        },
+        "from": { "type": "string" },
+        "to": { "type": "string" }
+      }
+    },
+
+    "interface": {
+      "type": "object",
+      "required": ["type", "pins"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["I2C", "SPI", "UART", "USB", "CAN", "Ethernet", "SDIO", "I2S", "SAI", "ADC", "DAC", "JTAG", "SWD"]
+        },
+        "instance": { "type": "integer" },
+        "pins": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    }
+  }
+}

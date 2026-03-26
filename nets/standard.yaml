@@ -1,0 +1,40 @@
+nets:
+  GND:
+    type: power_return
+    voltage: 0V
+
+  VCC_1V0:
+    type: power
+    voltage: 1.0V
+
+  VCC_1V2:
+    type: power
+    voltage: 1.2V
+
+  VCC_1V5:
+    type: power
+    voltage: 1.5V
+
+  VCC_1V8:
+    type: power
+    voltage: 1.8V
+
+  VCC_2V5:
+    type: power
+    voltage: 2.5V
+
+  VCC_3V3:
+    type: power
+    voltage: 3.3V
+
+  VCC_5V:
+    type: power
+    voltage: 5.0V
+
+  VCC_12V:
+    type: power
+    voltage: 12.0V
+
+  VCC_24V:
+    type: power
+    voltage: 24.0V
