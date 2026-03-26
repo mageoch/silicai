@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mageoch/silicai/schema/defs/interface.schema.json",
+  "title": "Interface",
+  "description": "A communication interface exposed by the component",
+  "type": "object",
+  "required": ["type", "pins"],
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "I2C", "SPI", "UART", "USB", "CAN", "Ethernet",
+        "SDIO", "I2S", "SAI", "ADC", "DAC",
+        "JTAG", "SWD", "SMBus", "1-Wire"
+      ]
+    },
+    "instance":  { "type": "integer" },
+    "speed_min": { "$ref": "measured_value.schema.json" },
+    "speed_max": { "$ref": "measured_value.schema.json" },
+    "pins": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    }
+  }
+}

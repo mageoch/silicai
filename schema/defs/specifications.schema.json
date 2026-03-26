@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mageoch/silicai/schema/defs/specifications.schema.json",
+  "title": "Specifications",
+  "description": "Primary specifications for passive components",
+  "type": "object",
+  "properties": {
+    "resistance":              { "$ref": "measured_value.schema.json" },
+    "capacitance":             { "$ref": "measured_value.schema.json" },
+    "inductance":              { "$ref": "measured_value.schema.json" },
+    "tolerance":               { "$ref": "measured_value.schema.json" },
+    "voltage_rating":          { "$ref": "measured_value.schema.json" },
+    "power_rating":            { "$ref": "measured_value.schema.json" },
+    "current_rating":          { "$ref": "measured_value.schema.json" },
+    "dc_resistance":           { "$ref": "measured_value.schema.json" },
+    "temperature_coefficient": { "$ref": "measured_value.schema.json" },
+    "temperature_range":       { "$ref": "range_value.schema.json" },
+    "dielectric":              { "type": "string" }
+  }
+}
