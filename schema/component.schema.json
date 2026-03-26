@@ -10,7 +10,7 @@
     "$schema_version": { "type": "string" },
     "component": {
       "type": "object",
-      "required": ["mpn", "manufacturer", "category", "package", "datasheet", "pins"],
+      "required": ["mpn", "manufacturer", "category", "package", "pins"],
       "properties": {
         "mpn": { "type": "string" },
         "manufacturer": { "type": "string" },
@@ -20,6 +20,8 @@
         },
         "package": { "type": "string" },
         "datasheet": { "type": "string", "format": "uri" },
+
+        "specifications": { "$ref": "#/$defs/specifications" },
 
         "absolute_maximum_ratings": {
           "type": "array",
@@ -50,6 +52,23 @@
   },
 
   "$defs": {
+    "specifications": {
+      "type": "object",
+      "properties": {
+        "resistance": { "type": "string" },
+        "capacitance": { "type": "string" },
+        "inductance": { "type": "string" },
+        "tolerance": { "type": "string" },
+        "voltage_rating": { "type": "string" },
+        "power_rating": { "type": "string" },
+        "current_rating": { "type": "string" },
+        "dielectric": { "type": "string" },
+        "temperature_coefficient": { "type": "string" },
+        "temperature_range": { "type": "string" },
+        "dc_resistance": { "type": "string" }
+      }
+    },
+
     "rating": {
       "type": "object",
       "required": ["parameter", "pins"],
