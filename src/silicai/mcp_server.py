@@ -13,6 +13,7 @@ from silicai.generate import (
     GenerateError, find_component, load_config, resolve, write_kicad_sch, write_kicad_project,
     _DEFAULT_KICAD_SYM,
 )
+from silicai.import_kicad import KiCadImportError, import_project
 from silicai.validate import build_registry, resolve_schema
 
 
@@ -538,6 +539,43 @@ def generate_kicad(path: str, output_path: str | None = None) -> dict:
             return {"outputs": [str(out)]}
 
     except GenerateError as e:
+        return {"error": str(e)}
+    except FileNotFoundError as e:
+        return {"error": f"File not found: {e}"}
+    except Exception as e:
+        return {"error": f"Unexpected error: {e}"}
+
+
+@mcp.tool()
+def import_kicad(path: str, output_path: str | None = None) -> dict:
+    """Import a KiCad schematic or project into SilicAI YAML.
+
+    Converts a .kicad_pro or .kicad_sch file into a SilicAI project.yaml and
+    circuits/*.yaml files. Components are matched against the configured library
+    by their kicad_symbol field; unrecognised symbols use the schematic Value
+    property as the MPN with a warning.
+
+    Args:
+        path: Absolute or project-relative path to a .kicad_pro or .kicad_sch file.
+        output_path: Output directory. Defaults to the same directory as the input.
+
+    Returns a dict with:
+        - outputs: list of written file paths
+        - warnings: list of warning strings (unrecognised symbols, missing sub-sheets)
+        - error: (only present on failure) error message string
+    """
+    try:
+        src = Path(path)
+        if not src.is_absolute():
+            src = (_project_dir / src).resolve()
+        out_dir = Path(output_path) if output_path else src.parent
+        if not out_dir.is_absolute():
+            out_dir = (_project_dir / out_dir).resolve()
+
+        written, warnings = import_project(src, _lib_paths, out_dir)
+        return {"outputs": [str(p) for p in written], "warnings": warnings}
+
+    except KiCadImportError as e:
         return {"error": str(e)}
     except FileNotFoundError as e:
         return {"error": f"File not found: {e}"}

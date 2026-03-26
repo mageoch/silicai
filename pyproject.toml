@@ -18,6 +18,7 @@ dependencies = [
 [project.scripts]
 silicai-validate = "silicai.validate:main"
 silicai-generate = "silicai.generate:main"
+silicai-import   = "silicai.import_kicad:main"
 silicai-mcp      = "silicai.mcp_server:main"
 
 [tool.setuptools.packages.find]
