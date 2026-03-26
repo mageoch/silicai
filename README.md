@@ -1,5 +1,7 @@
 # SilicAI
 
+Copyright 2026 mageo services Ltd — Licensed under the [PolyForm Noncommercial License 1.0.0](LICENSE). Commercial use requires a [separate license](COMMERCIAL_LICENSE.md).
+
 Structured electronic component descriptions for AI-assisted circuit design.
 
 ## Concept
