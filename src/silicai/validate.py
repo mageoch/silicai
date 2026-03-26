@@ -17,6 +17,7 @@ _SCHEMA_PKG = files("silicai").joinpath("schema")
 SCHEMA_MAP = {
     "component.schema.json": "component.schema.json",
     "circuit.schema.json":   "circuit.schema.json",
+    "project.schema.json":   "project.schema.json",
 }
 
 

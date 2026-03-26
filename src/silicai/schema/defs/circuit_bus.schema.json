@@ -12,7 +12,46 @@
       "description": "Communication protocol",
       "enum": ["I2C", "SPI", "UART", "USB", "CAN", "Ethernet", "SDIO", "I2S", "SMBus", "1-Wire"]
     },
-    "speed": { "$ref": "measured_value.schema.json", "description": "Operating speed of this bus" }
+    "speed":    { "$ref": "measured_value.schema.json", "description": "Operating speed of this bus" },
+    "pull_ups": {
+      "type": "object",
+      "description": "Pull-up resistors for open-drain signals, keyed by signal role. Required for I2C and SMBus. Keys must be valid signal roles for the bus type.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["resistance", "net"],
+        "properties": {
+          "resistance": { "$ref": "measured_value.schema.json", "description": "Pull-up resistance (e.g. {value: 4.7, unit: kΩ})" },
+          "net":        { "type": "string", "description": "Net to pull up to (e.g. +3V3)" }
+        },
+        "additionalProperties": false
+      }
+    }
   },
-  "additionalProperties": false
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if":   { "properties": { "type": { "const": "I2C" } }, "required": ["type"] },
+      "then": {
+        "required": ["pull_ups"],
+        "properties": {
+          "pull_ups": {
+            "required": ["sda", "scl"],
+            "propertyNames": { "$ref": "bus_signals.schema.json#/$defs/I2C" }
+          }
+        }
+      }
+    },
+    {
+      "if":   { "properties": { "type": { "const": "SMBus" } }, "required": ["type"] },
+      "then": {
+        "required": ["pull_ups"],
+        "properties": {
+          "pull_ups": {
+            "required": ["sda", "scl"],
+            "propertyNames": { "$ref": "bus_signals.schema.json#/$defs/SMBus" }
+          }
+        }
+      }
+    }
+  ]
 }

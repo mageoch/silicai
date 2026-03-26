@@ -1,0 +1,47 @@
+$schema: "https://github.com/mageoch/silicai/schema/component.schema.json"
+$schema_version: "0.1.0"
+
+component:
+  mpn: TEST_SENSOR_001
+  manufacturer: Test Inc.
+  category: sensor
+  package: SOT-23-5
+  kicad_symbol: "Sensor_Temperature:TMP117xxYBG"
+
+  temperature_range:
+    operating:
+      min: { value: -40, unit: °C }
+      max: { value: 85, unit: °C }
+
+  rails:
+    - id: vcc
+      net: VCC
+      per_pin_decoupling:
+        - type: capacitor
+          capacitance: { value: 100, unit: nF }
+
+  pins:
+    - number: 1
+      name: VCC
+      direction: power_in
+      rail: vcc
+    - number: 2
+      name: GND
+      direction: power_in
+      net: GND
+    - number: 3
+      name: SCL
+      direction: input
+      primary_function:
+        type: i2c_scl
+    - number: 4
+      name: SDA
+      direction: bidirectional
+      primary_function:
+        type: i2c_sda
+    - number: 5
+      name: ALERT
+      direction: output
+      primary_function:
+        type: alert
+        polarity: active_low

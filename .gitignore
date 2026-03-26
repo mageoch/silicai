@@ -1,15 +1,12 @@
 __pycache__/
 *.py[cod]
 .venv/
+build/
 dist/
 *.egg-info/
 .env
 scratch/
 
-build/
-dist/
-*.egg-info/
-
 # Generated documentation
-docs/schema/
+docs/
 site/

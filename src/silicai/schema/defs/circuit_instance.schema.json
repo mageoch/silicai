@@ -14,13 +14,19 @@
       "type": "string",
       "description": "Component MPN, must exist in the configured component library"
     },
-    "bus": {
-      "type": "string",
-      "description": "ID of the bus this component is connected to"
+    "buses": {
+      "type": "array",
+      "description": "Buses this component is connected to",
+      "items": { "$ref": "circuit_bus_connection.schema.json" }
     },
     "pin_config": {
       "type": "object",
       "description": "Per-pin configuration (e.g. address select, boot mode)",
+      "additionalProperties": { "type": "string" }
+    },
+    "rails": {
+      "type": "object",
+      "description": "Rail net overrides: maps component rail IDs to circuit net names",
       "additionalProperties": { "type": "string" }
     }
   },

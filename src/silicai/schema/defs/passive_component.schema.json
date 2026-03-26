@@ -39,6 +39,7 @@
       "description": "component: one per IC instance. bus: shared across all devices on the bus."
     },
     "from": { "type": "string", "description": "Source pin name this component connects from" },
-    "to":   { "type": "string", "description": "Destination net name this component connects to" }
+    "to":   { "type": "string", "description": "Destination net name this component connects to" },
+    "remark": { "type": "string", "description": "Free-form note about why this component is needed or how to select it" }
   }
 }

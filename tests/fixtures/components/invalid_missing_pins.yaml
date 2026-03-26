@@ -1,0 +1,9 @@
+$schema: "https://github.com/mageoch/silicai/schema/component.schema.json"
+$schema_version: "0.1.0"
+
+component:
+  mpn: BAD_COMPONENT
+  manufacturer: Test Inc.
+  category: sensor
+  package: SOT-23
+  # Missing required 'pins' field

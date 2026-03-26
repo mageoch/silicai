@@ -27,6 +27,7 @@
       "type": "array",
       "description": "Large bulk decoupling capacitors placed near the component",
       "items": { "$ref": "passive_component.schema.json" }
-    }
+    },
+    "remark": { "type": "string", "description": "Free-form note about this rail (e.g. must be sequenced before DVDD, shared with another supply)" }
   }
 }

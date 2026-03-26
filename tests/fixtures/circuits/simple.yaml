@@ -1,0 +1,18 @@
+$schema: "https://github.com/mageoch/silicai/schema/circuit.schema.json"
+$schema_version: "0.1.0"
+
+circuit:
+  name: Simple test circuit
+  description: Minimal circuit for testing resolve()
+
+  power_rails:
+    - net: VCC
+    - net: GND
+
+  instances:
+    - ref: U1
+      mpn: TEST_SENSOR_001
+      rails:
+        vcc: VCC
+      pin_config:
+        ALERT: GND

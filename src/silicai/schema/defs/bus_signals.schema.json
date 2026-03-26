@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mageoch/silicai/schema/defs/bus_signals.schema.json",
+  "title": "Bus Signal Roles",
+  "description": "Canonical signal roles for each communication protocol. Referenced by interface.schema.json and circuit_bus_connection.schema.json to validate pin-role mappings.",
+
+  "$defs": {
+    "I2C_node_roles":  { "enum": ["master", "slave"] },
+    "SPI_node_roles":  { "enum": ["master", "slave"] },
+    "I2S_node_roles":  { "enum": ["master", "slave"] },
+    "UART_node_roles": { "enum": ["host", "device"] },
+    "CAN_node_roles":  { "enum": ["node"] },
+
+    "I2C":      { "enum": ["sda", "scl"] },
+    "SMBus":    { "enum": ["sda", "scl", "alert"] },
+    "SPI":      { "enum": ["mosi", "miso", "clk", "cs"] },
+    "UART":     { "enum": ["tx", "rx", "rts", "cts"] },
+    "SWD":      { "enum": ["io", "clk"] },
+    "JTAG":     { "enum": ["tdi", "tdo", "tck", "tms", "trst"] },
+    "USB":      { "enum": ["dp", "dm"] },
+    "CAN":      { "enum": ["tx", "rx"] },
+    "I2S":      { "enum": ["sck", "ws", "sd", "mck"] },
+    "SAI":      { "enum": ["sck", "fs", "sd", "mck"] },
+    "SDIO":     { "enum": ["clk", "cmd", "d0", "d1", "d2", "d3"] },
+    "Ethernet": { "enum": ["tx_p", "tx_n", "rx_p", "rx_n", "mdio", "mdc"] },
+    "1-Wire":   { "enum": ["dq"] }
+  }
+}

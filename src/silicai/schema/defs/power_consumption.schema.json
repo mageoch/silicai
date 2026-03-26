@@ -29,6 +29,7 @@
     "conditions": {
       "type": "string",
       "description": "Measurement conditions as stated in the datasheet (e.g. VDD=3.3V, f=64MHz, all peripherals on)"
-    }
+    },
+    "remark": { "type": "string", "description": "Free-form note about this power mode (e.g. excludes crystal oscillator current, minimum load required)" }
   }
 }

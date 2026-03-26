@@ -18,6 +18,7 @@ dependencies = [
 [project.scripts]
 silicai-validate = "silicai.validate:main"
 silicai-generate = "silicai.generate:main"
+silicai-mcp      = "silicai.mcp_server:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -25,9 +26,27 @@ where = ["src"]
 [tool.setuptools.package-data]
 silicai = ["schema/**/*.json"]
 
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+    "yamlfix",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.yamlfix]
+explicit_start = false
+preserve_quotes = true
+section_whitelines = 1
+line_length = 120
+
 [project.optional-dependencies]
 docs = [
     "json-schema-for-humans",
     "mkdocs",
     "mkdocs-material>=9.5,<9.6",
+]
+mcp = [
+    "mcp>=1.0",
 ]

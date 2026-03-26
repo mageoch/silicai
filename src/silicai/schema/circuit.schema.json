@@ -10,7 +10,7 @@
     "$schema_version": { "type": "string" },
     "circuit": {
       "type": "object",
-      "required": ["name", "power_rails", "instances"],
+      "required": ["name", "instances"],
       "properties": {
         "name":        { "type": "string", "description": "Human-readable circuit name" },
         "description": { "type": "string", "description": "Brief description of the circuit's purpose" },

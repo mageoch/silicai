@@ -11,24 +11,57 @@ Electronic component information lives in PDF datasheets — unstructured, hard 
 - Pin directions and functions (primary + all alternate functions)
 - Power rails with per-pin and bulk decoupling requirements
 - Required external components (filters, pull-ups, decoupling)
-- Standard net definitions
+- Standard net definitions and electrical characteristics
 
 The goal is to give AI tools the structured context they need to generate correct, production-ready schematics.
 
 ## Structure
 
 ```
-schema/          JSON Schema for component validation
-nets/            Standard net definitions (GND, VCC_3V3, ...)
-components/      Component library (organized by category/manufacturer)
-tools/           CLI tools (validate, generate)
+src/silicai/
+  validate.py        Schema validation CLI
+  generate.py        KiCad schematic generator
+  mcp_server.py      MCP server for Claude Code integration
+  schema/            JSON Schema definitions
+    component.schema.json
+    circuit.schema.json
+    project.schema.json
+    defs/            Shared schema definitions
+nets/                Standard net definitions (GND, VCC_3V3, ...)
+tests/               Test suite
 ```
+
+The component library lives in the companion repository [mageoch/silicai-components](https://github.com/mageoch/silicai-components).
 
 ## Usage
 
 ```bash
-pip install -e .
-silicai-validate components/mcu/st/stm32f405rgt6.yaml
+uv pip install -e .
+
+# Validate a component or circuit file
+silicai-validate path/to/component.yaml
+
+# Generate a KiCad schematic from a circuit definition
+silicai-generate path/to/circuit.yaml --output kicad/
+
+# Run the MCP server
+silicai-mcp --project-dir .
+```
+
+## MCP Server
+
+SilicAI exposes a [Model Context Protocol](https://modelcontextprotocol.io) server that lets Claude Code read component definitions and generate schematics. Add to your project's `.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "SilicAI": {
+      "type": "stdio",
+      "command": ".venv/bin/silicai-mcp",
+      "args": ["--project-dir", "."]
+    }
+  }
+}
 ```
 
 ## Status

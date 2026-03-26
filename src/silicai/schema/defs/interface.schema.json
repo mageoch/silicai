@@ -18,10 +18,26 @@
     "instance":  { "type": "integer", "description": "Interface instance number when multiple of the same type exist (e.g. 1 for I2C1, 2 for I2C2)" },
     "speed_min": { "$ref": "measured_value.schema.json", "description": "Minimum supported interface speed" },
     "speed_max": { "$ref": "measured_value.schema.json", "description": "Maximum supported interface speed" },
+    "description": { "type": "string" },
     "pins": {
       "type": "object",
-      "description": "Map of signal role to pin name (e.g. {scl: SCL, sda: SDA})",
+      "description": "Map of signal role to pin name (e.g. {scl: SCL, sda: SDA}). Role names must match the canonical set for the declared protocol type.",
       "additionalProperties": { "type": "string" }
     }
-  }
+  },
+  "allOf": [
+    { "if": { "properties": { "type": { "const": "I2C"      } }, "required": ["type"] }, "then": { "properties": { "pins": { "propertyNames": { "$ref": "bus_signals.schema.json#/$defs/I2C"      } } } } },
+    { "if": { "properties": { "type": { "const": "SMBus"    } }, "required": ["type"] }, "then": { "properties": { "pins": { "propertyNames": { "$ref": "bus_signals.schema.json#/$defs/SMBus"    } } } } },
+    { "if": { "properties": { "type": { "const": "SPI"      } }, "required": ["type"] }, "then": { "properties": { "pins": { "propertyNames": { "$ref": "bus_signals.schema.json#/$defs/SPI"      } } } } },
+    { "if": { "properties": { "type": { "const": "UART"     } }, "required": ["type"] }, "then": { "properties": { "pins": { "propertyNames": { "$ref": "bus_signals.schema.json#/$defs/UART"     } } } } },
+    { "if": { "properties": { "type": { "const": "SWD"      } }, "required": ["type"] }, "then": { "properties": { "pins": { "propertyNames": { "$ref": "bus_signals.schema.json#/$defs/SWD"      } } } } },
+    { "if": { "properties": { "type": { "const": "JTAG"     } }, "required": ["type"] }, "then": { "properties": { "pins": { "propertyNames": { "$ref": "bus_signals.schema.json#/$defs/JTAG"     } } } } },
+    { "if": { "properties": { "type": { "const": "USB"      } }, "required": ["type"] }, "then": { "properties": { "pins": { "propertyNames": { "$ref": "bus_signals.schema.json#/$defs/USB"      } } } } },
+    { "if": { "properties": { "type": { "const": "CAN"      } }, "required": ["type"] }, "then": { "properties": { "pins": { "propertyNames": { "$ref": "bus_signals.schema.json#/$defs/CAN"      } } } } },
+    { "if": { "properties": { "type": { "const": "I2S"      } }, "required": ["type"] }, "then": { "properties": { "pins": { "propertyNames": { "$ref": "bus_signals.schema.json#/$defs/I2S"      } } } } },
+    { "if": { "properties": { "type": { "const": "SAI"      } }, "required": ["type"] }, "then": { "properties": { "pins": { "propertyNames": { "$ref": "bus_signals.schema.json#/$defs/SAI"      } } } } },
+    { "if": { "properties": { "type": { "const": "SDIO"     } }, "required": ["type"] }, "then": { "properties": { "pins": { "propertyNames": { "$ref": "bus_signals.schema.json#/$defs/SDIO"     } } } } },
+    { "if": { "properties": { "type": { "const": "Ethernet" } }, "required": ["type"] }, "then": { "properties": { "pins": { "propertyNames": { "$ref": "bus_signals.schema.json#/$defs/Ethernet" } } } } },
+    { "if": { "properties": { "type": { "const": "1-Wire"   } }, "required": ["type"] }, "then": { "properties": { "pins": { "propertyNames": { "$ref": "bus_signals.schema.json#/$defs/1-Wire"   } } } } }
+  ]
 }

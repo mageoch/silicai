@@ -11,6 +11,7 @@
     "unit":      { "type": "string", "description": "Unit of the rating values (e.g. V, mA, °C)" },
     "min":       { "type": "number", "description": "Minimum value" },
     "nom":       { "type": "number", "description": "Nominal (typical) value" },
-    "max":       { "type": "number", "description": "Maximum value" }
+    "max":       { "type": "number", "description": "Maximum value" },
+    "remark":    { "type": "string", "description": "Free-form note about this rating (e.g. latchup test condition, ESD model used)" }
   }
 }

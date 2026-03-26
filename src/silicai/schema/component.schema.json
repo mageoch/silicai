@@ -32,9 +32,11 @@
         "recommended_operating_conditions": { "type": "array", "description": "Conditions for normal operation as specified in the datasheet", "items": { "$ref": "defs/rating.schema.json" } },
         "temperature_range": { "$ref": "defs/temperature_range.schema.json", "description": "Operating and storage temperature limits, junction temperature, and thermal resistance" },
         "power_consumption":  { "type": "array", "description": "Supply current per operating mode for power budgeting", "items": { "$ref": "defs/power_consumption.schema.json" } },
+        "timing":             { "type": "array", "description": "Timing parameters (setup/hold times, propagation delays, rise/fall times)", "items": { "$ref": "defs/timing.schema.json" } },
         "rails":      { "type": "array", "description": "Power supply rails with their decoupling requirements", "items": { "$ref": "defs/rail.schema.json" } },
         "pins":       { "type": "array", "description": "Pin definitions including electrical characteristics and functions", "items": { "$ref": "defs/pin.schema.json" } },
-        "interfaces": { "type": "array", "description": "Communication interfaces exposed by the component", "items": { "$ref": "defs/interface.schema.json" } }
+        "interfaces": { "type": "array", "description": "Communication interfaces exposed by the component", "items": { "$ref": "defs/interface.schema.json" } },
+        "remark": { "type": "string", "description": "Free-form note about this component (e.g. known errata, special design requirements, recommended alternatives)" }
       }
     }
   }

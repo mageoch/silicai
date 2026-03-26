@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mageoch/silicai/schema/defs/timing.schema.json",
+  "title": "Timing Specification",
+  "description": "A single timing parameter from the datasheet (setup time, hold time, propagation delay, etc.)",
+  "type": "object",
+  "required": ["name"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Timing parameter name as used in the datasheet (e.g. t_su, t_hd, t_r, t_pd)"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description (e.g. SDA setup time to SCL rising edge)"
+    },
+    "from_pin": {
+      "type": "string",
+      "description": "Reference pin or signal for the start of the timing interval"
+    },
+    "to_pin": {
+      "type": "string",
+      "description": "Reference pin or signal for the end of the timing interval"
+    },
+    "from_edge": {
+      "type": "string",
+      "enum": ["rising", "falling", "any"],
+      "description": "Triggering edge on from_pin"
+    },
+    "to_edge": {
+      "type": "string",
+      "enum": ["rising", "falling", "any"],
+      "description": "Triggering edge on to_pin"
+    },
+    "min": { "$ref": "measured_value.schema.json", "description": "Minimum value" },
+    "typ": { "$ref": "measured_value.schema.json", "description": "Typical value" },
+    "max": { "$ref": "measured_value.schema.json", "description": "Maximum value" },
+    "conditions": {
+      "type": "string",
+      "description": "Conditions under which this timing applies (e.g. VDD=3.3V, CL=10pF)"
+    },
+    "interface": {
+      "type": "string",
+      "description": "Interface this timing belongs to (e.g. I2C, SPI, UART)"
+    },
+    "remark": { "type": "string", "description": "Free-form note about this timing parameter (e.g. only applies when CL > 100pF)" }
+  }
+}

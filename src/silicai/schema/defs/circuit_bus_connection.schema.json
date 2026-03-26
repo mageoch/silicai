@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mageoch/silicai/schema/defs/circuit_bus_connection.schema.json",
+  "title": "Circuit Bus Connection",
+  "description": "Connects a component instance to a circuit bus, optionally specifying which interface instance and pin assignments to use",
+  "type": "object",
+  "required": ["id"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "ID of the bus defined in circuit.buses"
+    },
+    "interface": {
+      "type": "string",
+      "description": "Interface type on this component to connect (e.g. I2C, SPI, UART). Defaults to the bus type."
+    },
+    "role": {
+      "type": "string",
+      "description": "Role of this component on the bus (e.g. master/slave for I2C). Must match a valid role for the declared interface type."
+    },
+    "address": {
+      "type": "string",
+      "description": "I2C address for slave devices. Drives address-select pin configuration automatically via the component's address_select options.",
+      "pattern": "^0x[0-9A-Fa-f]{1,2}$"
+    },
+    "pins": {
+      "type": "object",
+      "description": "Maps interface signal roles to component pin names. Required for flexible-pin components (e.g. MCUs with multiplexed GPIOs). Keys are role names (e.g. sda, scl); values are component pin names (e.g. GPIO4).",
+      "additionalProperties": { "type": "string" }
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    { "if": { "properties": { "interface": { "const": "I2C"      } }, "required": ["interface"] }, "then": { "properties": { "pins": { "propertyNames": { "$ref": "bus_signals.schema.json#/$defs/I2C"      } }, "role": { "$ref": "bus_signals.schema.json#/$defs/I2C_node_roles"  } } } },
+    { "if": { "properties": { "interface": { "const": "SMBus"    } }, "required": ["interface"] }, "then": { "properties": { "pins": { "propertyNames": { "$ref": "bus_signals.schema.json#/$defs/SMBus"    } }, "role": { "$ref": "bus_signals.schema.json#/$defs/I2C_node_roles"  } } } },
+    { "if": { "properties": { "interface": { "const": "SPI"      } }, "required": ["interface"] }, "then": { "properties": { "pins": { "propertyNames": { "$ref": "bus_signals.schema.json#/$defs/SPI"      } }, "role": { "$ref": "bus_signals.schema.json#/$defs/SPI_node_roles"  } } } },
+    { "if": { "properties": { "interface": { "const": "UART"     } }, "required": ["interface"] }, "then": { "properties": { "pins": { "propertyNames": { "$ref": "bus_signals.schema.json#/$defs/UART"     } }, "role": { "$ref": "bus_signals.schema.json#/$defs/UART_node_roles" } } } },
+    { "if": { "properties": { "interface": { "const": "SWD"      } }, "required": ["interface"] }, "then": { "properties": { "pins": { "propertyNames": { "$ref": "bus_signals.schema.json#/$defs/SWD"      } } } } },
+    { "if": { "properties": { "interface": { "const": "JTAG"     } }, "required": ["interface"] }, "then": { "properties": { "pins": { "propertyNames": { "$ref": "bus_signals.schema.json#/$defs/JTAG"     } } } } },
+    { "if": { "properties": { "interface": { "const": "USB"      } }, "required": ["interface"] }, "then": { "properties": { "pins": { "propertyNames": { "$ref": "bus_signals.schema.json#/$defs/USB"      } } } } },
+    { "if": { "properties": { "interface": { "const": "CAN"      } }, "required": ["interface"] }, "then": { "properties": { "pins": { "propertyNames": { "$ref": "bus_signals.schema.json#/$defs/CAN"      } }, "role": { "$ref": "bus_signals.schema.json#/$defs/CAN_node_roles"  } } } },
+    { "if": { "properties": { "interface": { "const": "I2S"      } }, "required": ["interface"] }, "then": { "properties": { "pins": { "propertyNames": { "$ref": "bus_signals.schema.json#/$defs/I2S"      } }, "role": { "$ref": "bus_signals.schema.json#/$defs/I2S_node_roles"  } } } },
+    { "if": { "properties": { "interface": { "const": "SAI"      } }, "required": ["interface"] }, "then": { "properties": { "pins": { "propertyNames": { "$ref": "bus_signals.schema.json#/$defs/SAI"      } } } } },
+    { "if": { "properties": { "interface": { "const": "SDIO"     } }, "required": ["interface"] }, "then": { "properties": { "pins": { "propertyNames": { "$ref": "bus_signals.schema.json#/$defs/SDIO"     } } } } },
+    { "if": { "properties": { "interface": { "const": "Ethernet" } }, "required": ["interface"] }, "then": { "properties": { "pins": { "propertyNames": { "$ref": "bus_signals.schema.json#/$defs/Ethernet" } } } } },
+    { "if": { "properties": { "interface": { "const": "1-Wire"   } }, "required": ["interface"] }, "then": { "properties": { "pins": { "propertyNames": { "$ref": "bus_signals.schema.json#/$defs/1-Wire"   } } } } }
+  ]
+}
