@@ -6,11 +6,12 @@
   "type": "object",
   "required": ["peripheral", "signal", "direction"],
   "properties": {
-    "af":         {},
-    "peripheral": { "type": "string" },
-    "signal":     { "type": "string" },
+    "af":         { "description": "Alternate function number (microcontroller-specific, e.g. AF4 for STM32)" },
+    "peripheral": { "type": "string", "description": "Peripheral name (e.g. I2C1, SPI2, USART3)" },
+    "signal":     { "type": "string", "description": "Signal name within the peripheral (e.g. SCL, MOSI, TX)" },
     "direction": {
       "type": "string",
+      "description": "Signal direction when this alternate function is active",
       "enum": ["input", "output", "bidirectional"]
     }
   }

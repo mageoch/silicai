@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mageoch/silicai/schema/defs/power_consumption.schema.json",
+  "title": "Power Consumption Entry",
+  "description": "Supply current draw for a specific operating mode, used for power budgeting",
+  "type": "object",
+  "required": ["mode", "current"],
+  "properties": {
+    "mode": {
+      "type": "string",
+      "description": "Operating mode name (e.g. active, sleep, shutdown, tx, rx, idle)"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of the mode and its conditions"
+    },
+    "rail": {
+      "type": "string",
+      "description": "Power rail ID this current is drawn from (references a rail in the component's rails array)"
+    },
+    "current": {
+      "$ref": "measured_value.schema.json",
+      "description": "Typical supply current in this mode (e.g. {value: 5, unit: mA})"
+    },
+    "current_max": {
+      "$ref": "measured_value.schema.json",
+      "description": "Maximum supply current in this mode"
+    },
+    "conditions": {
+      "type": "string",
+      "description": "Measurement conditions as stated in the datasheet (e.g. VDD=3.3V, f=64MHz, all peripherals on)"
+    }
+  }
+}

@@ -6,8 +6,8 @@
   "type": "object",
   "required": ["value", "unit"],
   "properties": {
-    "value": { "type": "number" },
-    "unit":  { "type": "string" }
+    "value": { "type": "number", "description": "Numeric quantity" },
+    "unit":  { "type": "string", "description": "Unit of measurement (e.g. V, mA, nF, kHz, Ω)" }
   },
   "additionalProperties": false
 }

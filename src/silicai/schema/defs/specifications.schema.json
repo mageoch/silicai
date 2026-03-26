@@ -5,16 +5,16 @@
   "description": "Primary specifications for passive components",
   "type": "object",
   "properties": {
-    "resistance":              { "$ref": "measured_value.schema.json" },
-    "capacitance":             { "$ref": "measured_value.schema.json" },
-    "inductance":              { "$ref": "measured_value.schema.json" },
-    "tolerance":               { "$ref": "measured_value.schema.json" },
-    "voltage_rating":          { "$ref": "measured_value.schema.json" },
-    "power_rating":            { "$ref": "measured_value.schema.json" },
-    "current_rating":          { "$ref": "measured_value.schema.json" },
-    "dc_resistance":           { "$ref": "measured_value.schema.json" },
-    "temperature_coefficient": { "$ref": "measured_value.schema.json" },
-    "temperature_range":       { "$ref": "range_value.schema.json" },
-    "dielectric":              { "type": "string" }
+    "resistance":              { "$ref": "measured_value.schema.json", "description": "Resistance value (for resistors)" },
+    "capacitance":             { "$ref": "measured_value.schema.json", "description": "Capacitance value (for capacitors)" },
+    "inductance":              { "$ref": "measured_value.schema.json", "description": "Inductance value (for inductors)" },
+    "tolerance":               { "$ref": "measured_value.schema.json", "description": "Component tolerance (e.g. {value: 1, unit: %})" },
+    "voltage_rating":          { "$ref": "measured_value.schema.json", "description": "Maximum rated voltage" },
+    "power_rating":            { "$ref": "measured_value.schema.json", "description": "Maximum rated power dissipation" },
+    "current_rating":          { "$ref": "measured_value.schema.json", "description": "Maximum rated continuous current" },
+    "dc_resistance":           { "$ref": "measured_value.schema.json", "description": "DC resistance (for inductors and ferrite beads)" },
+    "temperature_coefficient": { "$ref": "measured_value.schema.json", "description": "Temperature coefficient (ppm/°C)" },
+    "temperature_range":       { "$ref": "range_value.schema.json", "description": "Operating temperature range" },
+    "dielectric":              { "type": "string", "description": "Capacitor dielectric type (e.g. X5R, X7R, C0G)" }
   }
 }

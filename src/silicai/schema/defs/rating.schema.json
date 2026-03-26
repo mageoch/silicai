@@ -6,11 +6,11 @@
   "type": "object",
   "required": ["parameter", "pins", "unit"],
   "properties": {
-    "parameter": { "type": "string" },
-    "pins":      { "type": "array", "items": { "type": "string" } },
-    "unit":      { "type": "string" },
-    "min":       { "type": "number" },
-    "nom":       { "type": "number" },
-    "max":       { "type": "number" }
+    "parameter": { "type": "string", "description": "Name of the parameter (e.g. Supply voltage, Operating temperature)" },
+    "pins":      { "type": "array", "description": "Pin names this rating applies to (empty list for global ratings)", "items": { "type": "string" } },
+    "unit":      { "type": "string", "description": "Unit of the rating values (e.g. V, mA, °C)" },
+    "min":       { "type": "number", "description": "Minimum value" },
+    "nom":       { "type": "number", "description": "Nominal (typical) value" },
+    "max":       { "type": "number", "description": "Maximum value" }
   }
 }

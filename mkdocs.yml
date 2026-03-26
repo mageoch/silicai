@@ -1,0 +1,41 @@
+site_name: SilicAI Schema Reference
+site_description: Structured electronic component descriptions for AI-assisted circuit design
+repo_url: https://github.com/mageoch/silicai
+
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: teal
+    accent: cyan
+  features:
+    - navigation.sections
+    - navigation.top
+    - toc.integrate
+
+markdown_extensions:
+  - tables
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+
+nav:
+  - Home: index.md
+  - Component: schema/component.md
+  - Circuit: schema/circuit.md
+  - Definitions:
+    - Pin: schema/defs/pin.md
+    - Pin Function: schema/defs/pin_function.md
+    - Pin Electrical: schema/defs/pin_electrical.md
+    - Alternate Function: schema/defs/alternate_function.md
+    - Rail: schema/defs/rail.md
+    - Interface: schema/defs/interface.md
+    - Passive Component: schema/defs/passive_component.md
+    - Specifications: schema/defs/specifications.md
+    - Rating: schema/defs/rating.md
+    - Measured Value: schema/defs/measured_value.md
+    - Range Value: schema/defs/range_value.md
+    - Relative Threshold: schema/defs/relative_threshold.md
+    - Circuit Bus: schema/defs/circuit_bus.md
+    - Circuit Power Rail: schema/defs/circuit_power_rail.md
+    - Circuit Instance: schema/defs/circuit_instance.md

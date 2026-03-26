@@ -6,22 +6,26 @@
   "type": "object",
   "required": ["id", "net"],
   "properties": {
-    "id":  { "type": "string" },
-    "net": { "type": "string" },
+    "id":  { "type": "string", "description": "Internal identifier for this rail, referenced by pin rail fields (e.g. vplus, vdd_core)" },
+    "net": { "type": "string", "description": "Net name in the schematic (e.g. VCC_3V3, GND)" },
     "type": {
       "type": "string",
+      "description": "power: externally supplied rail. internal_node: generated internally (e.g. LDO output).",
       "enum": ["power", "internal_node"]
     },
     "input_filter": {
       "type": "array",
+      "description": "Passive filter components placed on the input of this rail (e.g. ferrite bead)",
       "items": { "$ref": "passive_component.schema.json" }
     },
     "per_pin_decoupling": {
       "type": "array",
+      "description": "Decoupling capacitors placed close to each power pin",
       "items": { "$ref": "passive_component.schema.json" }
     },
     "bulk_decoupling": {
       "type": "array",
+      "description": "Large bulk decoupling capacitors placed near the component",
       "items": { "$ref": "passive_component.schema.json" }
     }
   }

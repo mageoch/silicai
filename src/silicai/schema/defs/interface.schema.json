@@ -8,17 +8,19 @@
   "properties": {
     "type": {
       "type": "string",
+      "description": "Communication protocol type",
       "enum": [
         "I2C", "SPI", "UART", "USB", "CAN", "Ethernet",
         "SDIO", "I2S", "SAI", "ADC", "DAC",
         "JTAG", "SWD", "SMBus", "1-Wire"
       ]
     },
-    "instance":  { "type": "integer" },
-    "speed_min": { "$ref": "measured_value.schema.json" },
-    "speed_max": { "$ref": "measured_value.schema.json" },
+    "instance":  { "type": "integer", "description": "Interface instance number when multiple of the same type exist (e.g. 1 for I2C1, 2 for I2C2)" },
+    "speed_min": { "$ref": "measured_value.schema.json", "description": "Minimum supported interface speed" },
+    "speed_max": { "$ref": "measured_value.schema.json", "description": "Maximum supported interface speed" },
     "pins": {
       "type": "object",
+      "description": "Map of signal role to pin name (e.g. {scl: SCL, sda: SDA})",
       "additionalProperties": { "type": "string" }
     }
   }

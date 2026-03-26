@@ -9,3 +9,7 @@ scratch/
 build/
 dist/
 *.egg-info/
+
+# Generated documentation
+docs/schema/
+site/

@@ -2,29 +2,33 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/mageoch/silicai/schema/defs/pin_electrical.schema.json",
   "title": "Pin Electrical Characteristics",
+  "description": "Datasheet electrical characteristics for a digital pin (switching thresholds and current limits)",
   "type": "object",
   "properties": {
     "v_ih_min": {
+      "description": "Minimum input voltage recognized as logic HIGH",
       "oneOf": [
         { "$ref": "measured_value.schema.json" },
         { "$ref": "relative_threshold.schema.json" }
       ]
     },
     "v_il_max": {
+      "description": "Maximum input voltage recognized as logic LOW",
       "oneOf": [
         { "$ref": "measured_value.schema.json" },
         { "$ref": "relative_threshold.schema.json" }
       ]
     },
     "v_oh_min": {
+      "description": "Minimum output voltage when driving logic HIGH",
       "oneOf": [
         { "$ref": "measured_value.schema.json" },
         { "$ref": "relative_threshold.schema.json" }
       ]
     },
-    "v_ol_max":   { "$ref": "measured_value.schema.json" },
-    "i_oh_max":   { "$ref": "measured_value.schema.json" },
-    "i_ol_max":   { "$ref": "measured_value.schema.json" },
-    "i_leak_max": { "$ref": "measured_value.schema.json" }
+    "v_ol_max":   { "$ref": "measured_value.schema.json", "description": "Maximum output voltage when driving logic LOW" },
+    "i_oh_max":   { "$ref": "measured_value.schema.json", "description": "Maximum source current when output is HIGH" },
+    "i_ol_max":   { "$ref": "measured_value.schema.json", "description": "Maximum sink current when output is LOW" },
+    "i_leak_max": { "$ref": "measured_value.schema.json", "description": "Maximum input leakage current" }
   }
 }

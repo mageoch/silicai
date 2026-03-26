@@ -6,8 +6,8 @@
   "type": "object",
   "required": ["multiplier", "reference"],
   "properties": {
-    "multiplier": { "type": "number" },
-    "reference":  { "type": "string" }
+    "multiplier": { "type": "number", "description": "Fraction of the reference voltage (e.g. 0.7 for 70%)" },
+    "reference":  { "type": "string", "description": "Reference voltage identifier (e.g. V+, VCC, VDD)" }
   },
   "additionalProperties": false
 }

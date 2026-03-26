@@ -2,11 +2,13 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/mageoch/silicai/schema/defs/pin_function.schema.json",
   "title": "Pin Function",
+  "description": "Primary logical function of a pin",
   "type": "object",
   "required": ["type"],
   "properties": {
     "type": {
       "type": "string",
+      "description": "Functional role of this pin",
       "enum": [
         "gpio", "reset", "boot_select",
         "clock_in", "clock_out",
@@ -14,24 +16,31 @@
         "i2c_scl", "i2c_sda",
         "spi_sck", "spi_mosi", "spi_miso", "spi_cs",
         "uart_tx", "uart_rx",
+        "usb_dp", "usb_dm",
+        "swd_io", "swd_clk",
+        "jtag_tdi", "jtag_tdo", "jtag_tck", "jtag_tms",
+        "nfc_antenna",
+        "adc",
         "alert", "address_select", "enable", "interrupt", "pwm"
       ]
     },
-    "polarity": { "type": "string", "enum": ["active_high", "active_low"] },
-    "port":     { "type": "string" },
-    "bit":      { "type": "integer" },
+    "polarity": { "type": "string", "description": "Active polarity for control signals (e.g. RESET, CS, ENABLE)", "enum": ["active_high", "active_low"] },
+    "port":     { "type": "string", "description": "GPIO port identifier (e.g. A, B, C for STM32)" },
+    "bit":      { "type": "integer", "description": "Bit number within the GPIO port" },
     "options": {
       "type": "array",
+      "description": "For address_select pins: list of connect_to/i2c_address pairings",
       "items": { "$ref": "#/$defs/address_select_option" }
     }
   },
   "$defs": {
     "address_select_option": {
+      "description": "Maps a connection target (net name) to the resulting I2C address",
       "type": "object",
       "required": ["connect_to", "i2c_address"],
       "properties": {
-        "connect_to":  { "type": "string" },
-        "i2c_address": { "type": "string" }
+        "connect_to":  { "type": "string", "description": "Net name to connect the address pin to (e.g. GND, VCC, SDA)" },
+        "i2c_address": { "type": "string", "description": "Resulting 7-bit I2C address in hex (e.g. 0x48)" }
       }
     }
   }

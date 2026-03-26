@@ -6,12 +6,13 @@
   "type": "object",
   "required": ["id", "type"],
   "properties": {
-    "id":    { "type": "string" },
+    "id":    { "type": "string", "description": "Unique identifier for this bus instance within the circuit (e.g. i2c_sensors)" },
     "type": {
       "type": "string",
+      "description": "Communication protocol",
       "enum": ["I2C", "SPI", "UART", "USB", "CAN", "Ethernet", "SDIO", "I2S", "SMBus", "1-Wire"]
     },
-    "speed": { "$ref": "measured_value.schema.json" }
+    "speed": { "$ref": "measured_value.schema.json", "description": "Operating speed of this bus" }
   },
   "additionalProperties": false
 }

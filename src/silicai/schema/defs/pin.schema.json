@@ -2,32 +2,36 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/mageoch/silicai/schema/defs/pin.schema.json",
   "title": "Pin",
+  "description": "A single pin of an electronic component with its electrical characteristics and functions",
   "type": "object",
   "required": ["number", "name", "direction"],
   "properties": {
-    "number":    { "type": "integer" },
-    "name":      { "type": "string" },
+    "number":    { "type": ["integer", "string"], "description": "Physical pin number as printed on the component package" },
+    "name":      { "type": "string", "description": "Pin name as printed in the datasheet (e.g. SCL, GPIO1, VCC)" },
     "direction": {
       "type": "string",
+      "description": "Electrical direction of the pin",
       "enum": [
         "input", "output", "bidirectional", "tri_state",
         "passive", "open_collector", "open_emitter",
         "power_in", "power_out", "no_connect"
       ]
     },
-    "open_drain":  { "type": "boolean" },
-    "must_connect": { "type": "boolean" },
-    "rail":        { "type": "string" },
-    "net":         { "type": "string" },
-    "voltage_level": { "$ref": "measured_value.schema.json" },
-    "electrical":    { "$ref": "pin_electrical.schema.json" },
-    "primary_function": { "$ref": "pin_function.schema.json" },
+    "open_drain":  { "type": "boolean", "description": "True if pin is open-drain/open-collector; requires an external pull-up resistor" },
+    "must_connect": { "type": "boolean", "description": "True if pin must be connected and cannot be left floating. Common for RESET, BOOT, and VCC pins." },
+    "rail":        { "type": "string", "description": "ID of the power rail this pin belongs to (references a rail defined in the component's rails array)" },
+    "net":         { "type": "string", "description": "Explicit net name override for this pin" },
+    "voltage_level": { "$ref": "measured_value.schema.json", "description": "Nominal logic voltage level of the pin" },
+    "electrical":    { "$ref": "pin_electrical.schema.json", "description": "Detailed electrical characteristics from the datasheet (V_IH, V_IL, etc.)" },
+    "primary_function": { "$ref": "pin_function.schema.json", "description": "Primary logical function of this pin" },
     "alternate_functions": {
       "type": "array",
+      "description": "Alternate peripheral functions available when this pin is configured as GPIO",
       "items": { "$ref": "alternate_function.schema.json" }
     },
     "required_external": {
       "type": "array",
+      "description": "Passive components that must be placed externally for this pin to operate correctly (e.g. pull-up resistors, bypass capacitors)",
       "items": { "$ref": "passive_component.schema.json" }
     }
   }

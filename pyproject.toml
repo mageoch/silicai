@@ -6,18 +6,28 @@ build-backend = "setuptools.build_meta"
 name = "silicai"
 version = "0.1.0"
 description = "Structured electronic component descriptions for AI-assisted circuit design"
+license = { text = "PolyForm-Noncommercial-1.0.0" }
 requires-python = ">=3.11"
 dependencies = [
     "pyyaml",
     "jsonschema",
     "referencing",
+    "kiutils",
 ]
 
 [project.scripts]
 silicai-validate = "silicai.validate:main"
+silicai-generate = "silicai.generate:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
 silicai = ["schema/**/*.json"]
+
+[project.optional-dependencies]
+docs = [
+    "json-schema-for-humans",
+    "mkdocs",
+    "mkdocs-material>=9.5,<9.6",
+]

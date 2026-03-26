@@ -6,7 +6,7 @@
   "type": "object",
   "required": ["net"],
   "properties": {
-    "net": { "type": "string" }
+    "net": { "type": "string", "description": "Net name matching a global net definition (e.g. VCC_3V3, GND)" }
   },
   "additionalProperties": false
 }

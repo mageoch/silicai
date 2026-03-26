@@ -8,25 +8,29 @@
   "properties": {
     "type": {
       "type": "string",
+      "description": "Component type",
       "enum": ["capacitor", "resistor", "ferrite_bead", "inductor", "crystal", "diode"]
     },
-    "resistance":          { "$ref": "measured_value.schema.json" },
-    "capacitance":         { "$ref": "measured_value.schema.json" },
-    "inductance":          { "$ref": "measured_value.schema.json" },
-    "impedance_at_100mhz": { "$ref": "measured_value.schema.json" },
-    "voltage_rating":      { "$ref": "measured_value.schema.json" },
-    "current_rating":      { "$ref": "measured_value.schema.json" },
-    "esr":                 { "$ref": "measured_value.schema.json" },
+    "resistance":          { "$ref": "measured_value.schema.json", "description": "Resistance value (for resistors and pull-ups)" },
+    "capacitance":         { "$ref": "measured_value.schema.json", "description": "Capacitance value (for capacitors)" },
+    "inductance":          { "$ref": "measured_value.schema.json", "description": "Inductance value (for inductors)" },
+    "impedance_at_100mhz": { "$ref": "measured_value.schema.json", "description": "Impedance at 100 MHz (for ferrite beads)" },
+    "voltage_rating":      { "$ref": "measured_value.schema.json", "description": "Maximum rated voltage" },
+    "current_rating":      { "$ref": "measured_value.schema.json", "description": "Maximum rated continuous current" },
+    "esr":                 { "$ref": "measured_value.schema.json", "description": "Equivalent series resistance (for capacitors)" },
     "dielectric": {
       "type": "array",
+      "description": "Acceptable capacitor dielectrics in order of preference (e.g. [X5R, X7R])",
       "items": { "type": "string" }
     },
     "placement": {
       "type": "string",
+      "description": "Required placement proximity relative to the associated pin or component",
       "enum": ["close", "nearby", "per_pin", "per_component"]
     },
     "quantity": {
       "type": "string",
+      "description": "How many instances of this component are needed",
       "enum": ["1", "per_pin", "per_component"]
     },
     "scope": {
@@ -34,7 +38,7 @@
       "enum": ["component", "bus"],
       "description": "component: one per IC instance. bus: shared across all devices on the bus."
     },
-    "from": { "type": "string" },
-    "to":   { "type": "string" }
+    "from": { "type": "string", "description": "Source pin name this component connects from" },
+    "to":   { "type": "string", "description": "Destination net name this component connects to" }
   }
 }

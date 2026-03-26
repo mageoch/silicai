@@ -12,25 +12,29 @@
       "type": "object",
       "required": ["mpn", "manufacturer", "category", "package", "pins"],
       "properties": {
-        "mpn":          { "type": "string" },
-        "manufacturer": { "type": "string" },
+        "mpn":          { "type": "string", "description": "Manufacturer Part Number (e.g. STM32F405RGT6, TMP117AIDRVR)" },
+        "manufacturer": { "type": "string", "description": "Component manufacturer name (e.g. Texas Instruments, STMicroelectronics)" },
         "category": {
           "type": "string",
+          "description": "Component category for grouping and AI-assisted selection",
           "enum": [
             "mcu", "mpu", "power_ic", "power_discrete",
             "analog", "logic", "memory", "wireless",
             "sensor", "passive", "connector", "discrete"
           ]
         },
-        "package":   { "type": "string" },
-        "datasheet": { "type": "string", "format": "uri" },
+        "package":       { "type": "string", "description": "Physical package (e.g. WSON-6, LQFP-64, SOT-23)" },
+        "datasheet":     { "type": "string", "format": "uri", "description": "URL to the official datasheet PDF" },
+        "kicad_symbol":  { "type": "string", "description": "KiCad library symbol reference, e.g. Sensor_Temperature:TMP117xxYBG" },
 
-        "specifications":              { "$ref": "defs/specifications.schema.json" },
-        "absolute_maximum_ratings":    { "type": "array", "items": { "$ref": "defs/rating.schema.json" } },
-        "recommended_operating_conditions": { "type": "array", "items": { "$ref": "defs/rating.schema.json" } },
-        "rails":      { "type": "array", "items": { "$ref": "defs/rail.schema.json" } },
-        "pins":       { "type": "array", "items": { "$ref": "defs/pin.schema.json" } },
-        "interfaces": { "type": "array", "items": { "$ref": "defs/interface.schema.json" } }
+        "specifications":              { "$ref": "defs/specifications.schema.json", "description": "Primary electrical specifications (for passive components)" },
+        "absolute_maximum_ratings":    { "type": "array", "description": "Conditions that must never be exceeded to avoid permanent damage", "items": { "$ref": "defs/rating.schema.json" } },
+        "recommended_operating_conditions": { "type": "array", "description": "Conditions for normal operation as specified in the datasheet", "items": { "$ref": "defs/rating.schema.json" } },
+        "temperature_range": { "$ref": "defs/temperature_range.schema.json", "description": "Operating and storage temperature limits, junction temperature, and thermal resistance" },
+        "power_consumption":  { "type": "array", "description": "Supply current per operating mode for power budgeting", "items": { "$ref": "defs/power_consumption.schema.json" } },
+        "rails":      { "type": "array", "description": "Power supply rails with their decoupling requirements", "items": { "$ref": "defs/rail.schema.json" } },
+        "pins":       { "type": "array", "description": "Pin definitions including electrical characteristics and functions", "items": { "$ref": "defs/pin.schema.json" } },
+        "interfaces": { "type": "array", "description": "Communication interfaces exposed by the component", "items": { "$ref": "defs/interface.schema.json" } }
       }
     }
   }

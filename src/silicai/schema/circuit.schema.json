@@ -12,18 +12,21 @@
       "type": "object",
       "required": ["name", "power_rails", "instances"],
       "properties": {
-        "name":        { "type": "string" },
-        "description": { "type": "string" },
+        "name":        { "type": "string", "description": "Human-readable circuit name" },
+        "description": { "type": "string", "description": "Brief description of the circuit's purpose" },
         "power_rails": {
           "type": "array",
+          "description": "Power rails used in this circuit",
           "items": { "$ref": "defs/circuit_power_rail.schema.json" }
         },
         "buses": {
           "type": "array",
+          "description": "Communication buses instantiated in this circuit",
           "items": { "$ref": "defs/circuit_bus.schema.json" }
         },
         "instances": {
           "type": "array",
+          "description": "Component instances that make up this circuit",
           "items": { "$ref": "defs/circuit_instance.schema.json" }
         }
       }
