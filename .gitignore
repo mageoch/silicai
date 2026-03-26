@@ -5,3 +5,7 @@ dist/
 *.egg-info/
 .env
 scratch/
+
+build/
+dist/
+*.egg-info/
