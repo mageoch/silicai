@@ -30,7 +30,7 @@
 
         "recommended_operating_conditions": {
           "type": "array",
-          "items": { "$ref": "#/$defs/operating_condition" }
+          "items": { "$ref": "#/$defs/rating" }
         },
 
         "rails": {
@@ -52,43 +52,67 @@
   },
 
   "$defs": {
+
+    "measured_value": {
+      "type": "object",
+      "required": ["value", "unit"],
+      "properties": {
+        "value": { "type": "number" },
+        "unit": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+
+    "range_value": {
+      "type": "object",
+      "required": ["min", "max", "unit"],
+      "properties": {
+        "min": { "type": "number" },
+        "max": { "type": "number" },
+        "unit": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+
+    "relative_threshold": {
+      "description": "Voltage threshold expressed as a fraction of a reference voltage (e.g. 0.7 * V+)",
+      "type": "object",
+      "required": ["multiplier", "reference"],
+      "properties": {
+        "multiplier": { "type": "number" },
+        "reference": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+
     "specifications": {
       "type": "object",
       "properties": {
-        "resistance": { "type": "string" },
-        "capacitance": { "type": "string" },
-        "inductance": { "type": "string" },
-        "tolerance": { "type": "string" },
-        "voltage_rating": { "type": "string" },
-        "power_rating": { "type": "string" },
-        "current_rating": { "type": "string" },
-        "dielectric": { "type": "string" },
-        "temperature_coefficient": { "type": "string" },
-        "temperature_range": { "type": "string" },
-        "dc_resistance": { "type": "string" }
+        "resistance":            { "$ref": "#/$defs/measured_value" },
+        "capacitance":           { "$ref": "#/$defs/measured_value" },
+        "inductance":            { "$ref": "#/$defs/measured_value" },
+        "tolerance":             { "$ref": "#/$defs/measured_value" },
+        "voltage_rating":        { "$ref": "#/$defs/measured_value" },
+        "power_rating":          { "$ref": "#/$defs/measured_value" },
+        "current_rating":        { "$ref": "#/$defs/measured_value" },
+        "dielectric":            { "type": "string" },
+        "temperature_coefficient": { "$ref": "#/$defs/measured_value" },
+        "temperature_range":     { "$ref": "#/$defs/range_value" },
+        "dc_resistance":         { "$ref": "#/$defs/measured_value" }
       }
     },
 
     "rating": {
+      "description": "One row of an absolute maximum ratings or recommended operating conditions table",
       "type": "object",
-      "required": ["parameter", "pins"],
+      "required": ["parameter", "pins", "unit"],
       "properties": {
         "parameter": { "type": "string" },
         "pins": { "type": "array", "items": { "type": "string" } },
-        "min": { "type": "string" },
-        "max": { "type": "string" }
-      }
-    },
-
-    "operating_condition": {
-      "type": "object",
-      "required": ["parameter", "pins"],
-      "properties": {
-        "parameter": { "type": "string" },
-        "pins": { "type": "array", "items": { "type": "string" } },
-        "min": { "type": "string" },
-        "nom": { "type": "string" },
-        "max": { "type": "string" }
+        "unit": { "type": "string" },
+        "min": { "type": "number" },
+        "nom": { "type": "number" },
+        "max": { "type": "number" }
       }
     },
 
@@ -131,7 +155,7 @@
         "must_connect": { "type": "boolean" },
         "rail": { "type": "string" },
         "net": { "type": "string" },
-        "voltage_level": { "type": "string" },
+        "voltage_level": { "$ref": "#/$defs/measured_value" },
         "electrical": { "$ref": "#/$defs/pin_electrical" },
         "primary_function": { "$ref": "#/$defs/pin_function" },
         "alternate_functions": {
@@ -148,13 +172,28 @@
     "pin_electrical": {
       "type": "object",
       "properties": {
-        "v_ih_min": { "type": "string" },
-        "v_il_max": { "type": "string" },
-        "v_oh_min": { "type": "string" },
-        "v_ol_max": { "type": "string" },
-        "i_oh_max": { "type": "string" },
-        "i_ol_max": { "type": "string" },
-        "i_leak_max": { "type": "string" }
+        "v_ih_min":   {
+          "oneOf": [
+            { "$ref": "#/$defs/measured_value" },
+            { "$ref": "#/$defs/relative_threshold" }
+          ]
+        },
+        "v_il_max":   {
+          "oneOf": [
+            { "$ref": "#/$defs/measured_value" },
+            { "$ref": "#/$defs/relative_threshold" }
+          ]
+        },
+        "v_oh_min":   {
+          "oneOf": [
+            { "$ref": "#/$defs/measured_value" },
+            { "$ref": "#/$defs/relative_threshold" }
+          ]
+        },
+        "v_ol_max":   { "$ref": "#/$defs/measured_value" },
+        "i_oh_max":   { "$ref": "#/$defs/measured_value" },
+        "i_ol_max":   { "$ref": "#/$defs/measured_value" },
+        "i_leak_max": { "$ref": "#/$defs/measured_value" }
       }
     },
 
@@ -165,33 +204,18 @@
         "type": {
           "type": "string",
           "enum": [
-            "gpio",
-            "reset",
-            "boot_select",
-            "clock_in",
-            "clock_out",
-            "power",
-            "analog_in",
-            "analog_out",
-            "differential_pair",
-            "i2c_scl",
-            "i2c_sda",
-            "spi_sck",
-            "spi_mosi",
-            "spi_miso",
-            "spi_cs",
-            "uart_tx",
-            "uart_rx",
-            "alert",
-            "address_select",
-            "enable",
-            "interrupt",
-            "pwm"
+            "gpio", "reset", "boot_select",
+            "clock_in", "clock_out",
+            "power", "analog_in", "analog_out", "differential_pair",
+            "i2c_scl", "i2c_sda",
+            "spi_sck", "spi_mosi", "spi_miso", "spi_cs",
+            "uart_tx", "uart_rx",
+            "alert", "address_select", "enable", "interrupt", "pwm"
           ]
         },
         "polarity": { "type": "string", "enum": ["active_high", "active_low"] },
-        "port": { "type": "string" },
-        "bit": { "type": "integer" },
+        "port":     { "type": "string" },
+        "bit":      { "type": "integer" },
         "options": {
           "type": "array",
           "items": { "$ref": "#/$defs/address_select_option" }
@@ -203,8 +227,8 @@
       "type": "object",
       "required": ["connect_to", "i2c_address"],
       "properties": {
-        "connect_to": { "type": "string" },
-        "i2c_address": { "type": "string" }
+        "connect_to":   { "type": "string" },
+        "i2c_address":  { "type": "string" }
       }
     },
 
@@ -212,9 +236,9 @@
       "type": "object",
       "required": ["peripheral", "signal", "direction"],
       "properties": {
-        "af": {},
+        "af":        {},
         "peripheral": { "type": "string" },
-        "signal": { "type": "string" },
+        "signal":    { "type": "string" },
         "direction": {
           "type": "string",
           "enum": ["input", "output", "bidirectional"]
@@ -230,15 +254,17 @@
           "type": "string",
           "enum": ["capacitor", "resistor", "ferrite_bead", "inductor", "crystal", "diode"]
         },
-        "value": { "type": "string" },
-        "voltage_rating": { "type": "string" },
-        "current_rating": { "type": "string" },
+        "resistance":          { "$ref": "#/$defs/measured_value" },
+        "capacitance":         { "$ref": "#/$defs/measured_value" },
+        "inductance":          { "$ref": "#/$defs/measured_value" },
+        "impedance_at_100mhz": { "$ref": "#/$defs/measured_value" },
+        "voltage_rating":      { "$ref": "#/$defs/measured_value" },
+        "current_rating":      { "$ref": "#/$defs/measured_value" },
+        "esr":                 { "$ref": "#/$defs/measured_value" },
         "dielectric": {
           "type": "array",
           "items": { "type": "string" }
         },
-        "esr": { "type": "string" },
-        "impedance_at_100mhz": { "type": "string" },
         "placement": {
           "type": "string",
           "enum": ["close", "nearby", "per_pin", "per_component"]
@@ -250,10 +276,10 @@
         "scope": {
           "type": "string",
           "enum": ["component", "bus"],
-          "description": "component: one per IC instance. bus: one per bus, shared across multiple devices."
+          "description": "component: one per IC instance. bus: shared across all devices on the bus."
         },
         "from": { "type": "string" },
-        "to": { "type": "string" }
+        "to":   { "type": "string" }
       }
     },
 
@@ -265,9 +291,9 @@
           "type": "string",
           "enum": ["I2C", "SPI", "UART", "USB", "CAN", "Ethernet", "SDIO", "I2S", "SAI", "ADC", "DAC", "JTAG", "SWD", "SMBus", "1-Wire"]
         },
-        "instance": { "type": "integer" },
-        "speed_min": { "type": "string" },
-        "speed_max": { "type": "string" },
+        "instance":  { "type": "integer" },
+        "speed_min": { "$ref": "#/$defs/measured_value" },
+        "speed_max": { "$ref": "#/$defs/measured_value" },
         "pins": {
           "type": "object",
           "additionalProperties": { "type": "string" }
