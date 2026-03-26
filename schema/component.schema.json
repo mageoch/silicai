@@ -6,6 +6,8 @@
   "type": "object",
   "required": ["component"],
   "properties": {
+    "$schema": { "type": "string" },
+    "$schema_version": { "type": "string" },
     "component": {
       "type": "object",
       "required": ["mpn", "manufacturer", "category", "package", "datasheet", "pins"],
@@ -18,6 +20,16 @@
         },
         "package": { "type": "string" },
         "datasheet": { "type": "string", "format": "uri" },
+
+        "absolute_maximum_ratings": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/rating" }
+        },
+
+        "recommended_operating_conditions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/operating_condition" }
+        },
 
         "rails": {
           "type": "array",
@@ -38,6 +50,29 @@
   },
 
   "$defs": {
+    "rating": {
+      "type": "object",
+      "required": ["parameter", "pins"],
+      "properties": {
+        "parameter": { "type": "string" },
+        "pins": { "type": "array", "items": { "type": "string" } },
+        "min": { "type": "string" },
+        "max": { "type": "string" }
+      }
+    },
+
+    "operating_condition": {
+      "type": "object",
+      "required": ["parameter", "pins"],
+      "properties": {
+        "parameter": { "type": "string" },
+        "pins": { "type": "array", "items": { "type": "string" } },
+        "min": { "type": "string" },
+        "nom": { "type": "string" },
+        "max": { "type": "string" }
+      }
+    },
+
     "rail": {
       "type": "object",
       "required": ["id", "net"],
@@ -73,8 +108,12 @@
           "type": "string",
           "enum": ["input", "output", "bidirectional", "tri_state", "passive", "open_collector", "open_emitter", "power_in", "power_out", "no_connect"]
         },
+        "open_drain": { "type": "boolean" },
+        "must_connect": { "type": "boolean" },
         "rail": { "type": "string" },
+        "net": { "type": "string" },
         "voltage_level": { "type": "string" },
+        "electrical": { "$ref": "#/$defs/pin_electrical" },
         "primary_function": { "$ref": "#/$defs/pin_function" },
         "alternate_functions": {
           "type": "array",
@@ -87,17 +126,66 @@
       }
     },
 
+    "pin_electrical": {
+      "type": "object",
+      "properties": {
+        "v_ih_min": { "type": "string" },
+        "v_il_max": { "type": "string" },
+        "v_oh_min": { "type": "string" },
+        "v_ol_max": { "type": "string" },
+        "i_oh_max": { "type": "string" },
+        "i_ol_max": { "type": "string" },
+        "i_leak_max": { "type": "string" }
+      }
+    },
+
     "pin_function": {
       "type": "object",
       "required": ["type"],
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["gpio", "reset", "boot_select", "clock_in", "clock_out", "power", "analog_in", "analog_out", "differential_pair"]
+          "enum": [
+            "gpio",
+            "reset",
+            "boot_select",
+            "clock_in",
+            "clock_out",
+            "power",
+            "analog_in",
+            "analog_out",
+            "differential_pair",
+            "i2c_scl",
+            "i2c_sda",
+            "spi_sck",
+            "spi_mosi",
+            "spi_miso",
+            "spi_cs",
+            "uart_tx",
+            "uart_rx",
+            "alert",
+            "address_select",
+            "enable",
+            "interrupt",
+            "pwm"
+          ]
         },
         "polarity": { "type": "string", "enum": ["active_high", "active_low"] },
         "port": { "type": "string" },
-        "bit": { "type": "integer" }
+        "bit": { "type": "integer" },
+        "options": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/address_select_option" }
+        }
+      }
+    },
+
+    "address_select_option": {
+      "type": "object",
+      "required": ["connect_to", "i2c_address"],
+      "properties": {
+        "connect_to": { "type": "string" },
+        "i2c_address": { "type": "string" }
       }
     },
 
@@ -140,6 +228,11 @@
           "type": "string",
           "enum": ["1", "per_pin", "per_component"]
         },
+        "scope": {
+          "type": "string",
+          "enum": ["component", "bus"],
+          "description": "component: one per IC instance. bus: one per bus, shared across multiple devices."
+        },
         "from": { "type": "string" },
         "to": { "type": "string" }
       }
@@ -151,9 +244,11 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["I2C", "SPI", "UART", "USB", "CAN", "Ethernet", "SDIO", "I2S", "SAI", "ADC", "DAC", "JTAG", "SWD"]
+          "enum": ["I2C", "SPI", "UART", "USB", "CAN", "Ethernet", "SDIO", "I2S", "SAI", "ADC", "DAC", "JTAG", "SWD", "SMBus", "1-Wire"]
         },
         "instance": { "type": "integer" },
+        "speed_min": { "type": "string" },
+        "speed_max": { "type": "string" },
         "pins": {
           "type": "object",
           "additionalProperties": { "type": "string" }
