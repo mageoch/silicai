@@ -772,23 +772,27 @@ def main() -> None:
     ]
     kicad_lib_path = Path(config.get("kicad_library_path", str(_DEFAULT_KICAD_SYM)))
 
+    doc = yaml.safe_load(args.circuit.read_text())
+
     try:
-        resolved = resolve(args.circuit, lib_paths)
+        if "project" in doc:
+            out_dir = args.output or args.circuit.parent
+            write_kicad_project(args.circuit, lib_paths, out_dir, kicad_lib_path)
+        else:
+            resolved = resolve(args.circuit, lib_paths)
+            print(f"Circuit: {resolved['name']}")
+            print(f"Parts ({len(resolved['parts'])}):")
+            for part in resolved["parts"]:
+                label = part.get("mpn") or f"{part['type']} {part['value']}"
+                print(f"  {part['ref']:5s}  {label}")
+            print(f"Nets ({len(resolved['netlist'])}):")
+            for net, conns in sorted(resolved["netlist"].items()):
+                pins = ", ".join(f"{r}.{p}" for r, p in conns)
+                print(f"  {net}: {pins}")
+            write_kicad_sch(resolved, output, kicad_lib_path)
     except GenerateError as e:
         print(f"✗ {e}", file=sys.stderr)
         sys.exit(1)
-
-    print(f"Circuit: {resolved['name']}")
-    print(f"Parts ({len(resolved['parts'])}):")
-    for part in resolved["parts"]:
-        label = part.get("mpn") or f"{part['type']} {part['value']}"
-        print(f"  {part['ref']:5s}  {label}")
-    print(f"Nets ({len(resolved['netlist'])}):")
-    for net, conns in sorted(resolved["netlist"].items()):
-        pins = ", ".join(f"{r}.{p}" for r, p in conns)
-        print(f"  {net}: {pins}")
-
-    write_kicad_sch(resolved, output, kicad_lib_path)
 
 
 if __name__ == "__main__":
