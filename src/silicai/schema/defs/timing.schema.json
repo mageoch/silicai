@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/mageoch/silicai/schema/defs/timing.schema.json",
+  "$id": "https://raw.githubusercontent.com/mageoch/silicai/main/src/silicai/schema/defs/timing.schema.json",
   "title": "Timing Specification",
   "description": "A single timing parameter from the datasheet (setup time, hold time, propagation delay, etc.)",
   "type": "object",

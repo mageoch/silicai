@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/mageoch/silicai/schema/defs/rating.schema.json",
+  "$id": "https://raw.githubusercontent.com/mageoch/silicai/main/src/silicai/schema/defs/rating.schema.json",
   "title": "Rating",
   "description": "One row of an absolute maximum ratings or recommended operating conditions table",
   "type": "object",

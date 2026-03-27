@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/mageoch/silicai/schema/defs/pin_electrical.schema.json",
+  "$id": "https://raw.githubusercontent.com/mageoch/silicai/main/src/silicai/schema/defs/pin_electrical.schema.json",
   "title": "Pin Electrical Characteristics",
   "description": "Datasheet electrical characteristics for a digital pin (switching thresholds and current limits)",
   "type": "object",

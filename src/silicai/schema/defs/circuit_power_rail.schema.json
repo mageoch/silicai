@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/mageoch/silicai/schema/defs/circuit_power_rail.schema.json",
+  "$id": "https://raw.githubusercontent.com/mageoch/silicai/main/src/silicai/schema/defs/circuit_power_rail.schema.json",
   "title": "Circuit Power Rail",
   "description": "A power rail instantiated in a circuit, referencing a global net",
   "type": "object",

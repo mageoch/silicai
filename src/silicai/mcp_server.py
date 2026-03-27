@@ -242,7 +242,7 @@ def get_component_template() -> str:
     Returns the template as a YAML string with inline comments.
     """
     return """\
-$schema: "https://github.com/mageoch/silicai/schema/component.schema.json"
+$schema: "https://raw.githubusercontent.com/mageoch/silicai/main/src/silicai/schema/component.schema.json"
 $schema_version: "0.1.0"
 
 component:

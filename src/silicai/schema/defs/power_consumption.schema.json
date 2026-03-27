@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/mageoch/silicai/schema/defs/power_consumption.schema.json",
+  "$id": "https://raw.githubusercontent.com/mageoch/silicai/main/src/silicai/schema/defs/power_consumption.schema.json",
   "title": "Power Consumption Entry",
   "description": "Supply current draw for a specific operating mode, used for power budgeting",
   "type": "object",

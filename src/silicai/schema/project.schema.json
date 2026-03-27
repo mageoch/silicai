@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/mageoch/silicai/schema/project.schema.json",
+  "$id": "https://raw.githubusercontent.com/mageoch/silicai/main/src/silicai/schema/project.schema.json",
   "title": "SilicAI Project",
   "description": "Top-level project definition grouping one or more circuits into a KiCad project",
   "type": "object",

@@ -1,4 +1,4 @@
-$schema: "https://github.com/mageoch/silicai/schema/circuit.schema.json"
+$schema: "https://raw.githubusercontent.com/mageoch/silicai/main/src/silicai/schema/circuit.schema.json"
 $schema_version: "0.1.0"
 
 circuit:
