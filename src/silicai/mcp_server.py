@@ -11,7 +11,7 @@ from mcp.server.fastmcp import FastMCP
 
 from silicai.generate import (
     GenerateError, find_component, load_config, resolve, write_kicad_sch, write_kicad_project,
-    _DEFAULT_KICAD_SYM,
+    _DEFAULT_KICAD_SYM, _BUILTIN_COMPONENTS,
 )
 from silicai.import_kicad import KiCadImportError, import_project
 from silicai.validate import build_registry, resolve_schema
@@ -601,7 +601,7 @@ def main() -> None:
     _project_dir = (args.project_dir or Path.cwd()).resolve()
 
     config = load_config(_project_dir)
-    _lib_paths = [
+    _lib_paths = [_BUILTIN_COMPONENTS] + [
         (_project_dir / entry["path"]).resolve()
         for entry in config.get("component_libraries", [])
     ]

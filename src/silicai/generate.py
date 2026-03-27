@@ -10,6 +10,7 @@ import argparse
 from pathlib import Path
 
 import yaml
+from importlib.resources import files
 from kiutils.schematic import Schematic
 from kiutils.symbol import SymbolLib
 from kiutils.items.schitems import (
@@ -49,6 +50,9 @@ _BUS_LEVEL_PULL_UP_TYPES: frozenset[str] = frozenset({"I2C", "SMBus"})
 
 
 # ── Config & component library ────────────────────────────────────────────────
+
+_BUILTIN_COMPONENTS = Path(str(files("silicai").joinpath("components")))
+
 
 def load_config(project_dir: Path) -> dict:
     with open(project_dir / "pyproject.toml", "rb") as f:
@@ -762,7 +766,7 @@ def main() -> None:
     output = args.output or args.circuit.with_suffix(".kicad_sch")
 
     config = load_config(project_dir)
-    lib_paths = [
+    lib_paths = [_BUILTIN_COMPONENTS] + [
         (project_dir / entry["path"]).resolve()
         for entry in config.get("component_libraries", [])
     ]

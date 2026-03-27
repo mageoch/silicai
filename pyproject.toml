@@ -25,7 +25,7 @@ silicai-mcp      = "silicai.mcp_server:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-silicai = ["schema/**/*.json"]
+silicai = ["schema/**/*.json", "components/**/*.yaml"]
 
 [dependency-groups]
 dev = [

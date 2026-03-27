@@ -1,0 +1,3 @@
+[submodule "src/silicai/components"]
+	path = src/silicai/components
+	url = git@github.com:mageoch/silicai-components.git
