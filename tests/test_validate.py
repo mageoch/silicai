@@ -72,3 +72,35 @@ class TestInvalidComponents:
         )
         r = _validate(bad)
         assert r.returncode != 0
+
+    def test_wrong_schema_version_rejected(self, tmp_path):
+        bad = tmp_path / "bad.yaml"
+        bad.write_text(
+            "$schema: 'https://mageoch.github.io/silicai/schema/component.schema.json'\n"
+            "$schema_version: '9.9.9'\n"
+            "component:\n"
+            "  mpn: X\n  manufacturer: X\n  category: sensor\n"
+            "  package: SOT-23\n  pins: []\n"
+        )
+        r = _validate(bad)
+        assert r.returncode != 0
+        assert "9.9.9" in r.stdout
+
+
+class TestProjectValidation:
+    def test_valid_project_fixture(self):
+        r = _validate(FIXTURES / "project.yaml")
+        assert r.returncode == 0
+        assert "✓" in r.stdout
+
+    def test_project_missing_circuits_rejected(self, tmp_path):
+        bad = tmp_path / "bad.yaml"
+        bad.write_text(
+            "$schema: 'https://mageoch.github.io/silicai/schema/project.schema.json'\n"
+            "$schema_version: '0.1.0'\n"
+            "project:\n"
+            "  name: Bad Project\n"
+            "  circuits: []\n"  # minItems: 1
+        )
+        r = _validate(bad)
+        assert r.returncode != 0

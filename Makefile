@@ -7,8 +7,11 @@ GSD         = uv run generate-schema-doc
 
 docs-generate:
 	mkdir -p $(DEFS_DIR)
+	cp $(SCHEMA_DIR)/*.schema.json $(DOCS_DIR)/
+	cp $(SCHEMA_DIR)/defs/*.schema.json $(DEFS_DIR)/
 	$(GSD) $(SCHEMA_DIR)/component.schema.json                $(DOCS_DIR)/component.md              --config-file docs-config.yaml
 	$(GSD) $(SCHEMA_DIR)/circuit.schema.json                  $(DOCS_DIR)/circuit.md                --config-file docs-config.yaml
+	$(GSD) $(SCHEMA_DIR)/project.schema.json                  $(DOCS_DIR)/project.md                --config-file docs-config.yaml
 	$(GSD) $(SCHEMA_DIR)/defs/pin.schema.json                 $(DEFS_DIR)/pin.md                    --config-file docs-config.yaml
 	$(GSD) $(SCHEMA_DIR)/defs/pin_function.schema.json        $(DEFS_DIR)/pin_function.md           --config-file docs-config.yaml
 	$(GSD) $(SCHEMA_DIR)/defs/pin_electrical.schema.json      $(DEFS_DIR)/pin_electrical.md         --config-file docs-config.yaml

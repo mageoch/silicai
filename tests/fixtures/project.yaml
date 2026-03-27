@@ -1,0 +1,14 @@
+$schema: "https://mageoch.github.io/silicai/schema/project.schema.json"
+$schema_version: "0.1.0"
+
+project:
+  name: Test Project
+  description: Minimal project fixture for testing
+
+  shared:
+    power_rails:
+      - net: VCC
+      - net: GND
+
+  circuits:
+    - circuits/simple.yaml

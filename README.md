@@ -75,6 +75,10 @@ SilicAI exposes a [Model Context Protocol](https://modelcontextprotocol.io) serv
 }
 ```
 
+## Documentation
+
+Schema reference: [mageoch.github.io/silicai](https://mageoch.github.io/silicai/)
+
 ## Status
 
-Early development. Schema and component format subject to change.
+v0.1.0 — public beta. Core schema, validation, KiCad generation, and MCP server are functional. Schema and component format may evolve before a stable 1.0 release.

@@ -13,6 +13,7 @@ from referencing import Registry, Resource
 from referencing.jsonschema import DRAFT202012
 
 _SCHEMA_PKG = files("silicai").joinpath("schema")
+SCHEMA_VERSION = "0.1.0"
 
 SCHEMA_MAP = {
     "component.schema.json": "component.schema.json",
@@ -49,6 +50,11 @@ def validate(file_path: Path, registry: Registry) -> bool:
         schema_ref = resolve_schema(schema_uri)
     except ValueError as e:
         print(f"✗ {file_path}: {e}")
+        return False
+
+    file_version = doc.get("$schema_version")
+    if file_version is not None and file_version != SCHEMA_VERSION:
+        print(f"✗ {file_path}: $schema_version {file_version!r} does not match expected {SCHEMA_VERSION!r}")
         return False
 
     schema = json.loads(schema_ref.read_text())

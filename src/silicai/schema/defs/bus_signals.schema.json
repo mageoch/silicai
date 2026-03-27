@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/mageoch/silicai/main/src/silicai/schema/defs/bus_signals.schema.json",
+  "$id": "https://mageoch.github.io/silicai/schema/defs/bus_signals.schema.json",
   "title": "Bus Signal Roles",
   "description": "Canonical signal roles for each communication protocol. Referenced by interface.schema.json and circuit_bus_connection.schema.json to validate pin-role mappings.",
 

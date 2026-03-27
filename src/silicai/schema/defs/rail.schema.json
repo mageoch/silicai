@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/mageoch/silicai/main/src/silicai/schema/defs/rail.schema.json",
+  "$id": "https://mageoch.github.io/silicai/schema/defs/rail.schema.json",
   "title": "Rail",
   "description": "A power supply rail with its decoupling requirements",
   "type": "object",

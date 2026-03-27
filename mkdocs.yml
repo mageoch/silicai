@@ -1,4 +1,5 @@
 site_name: SilicAI Schema Reference
+site_url: https://mageoch.github.io/silicai/
 site_description: Structured electronic component descriptions for AI-assisted circuit design
 repo_url: https://github.com/mageoch/silicai
 
@@ -23,6 +24,7 @@ nav:
   - Home: index.md
   - Component: schema/component.md
   - Circuit: schema/circuit.md
+  - Project: schema/project.md
   - Definitions:
     - Pin: schema/defs/pin.md
     - Pin Function: schema/defs/pin_function.md

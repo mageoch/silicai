@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/mageoch/silicai/main/src/silicai/schema/defs/pin.schema.json",
+  "$id": "https://mageoch.github.io/silicai/schema/defs/pin.schema.json",
   "title": "Pin",
   "description": "A single pin of an electronic component with its electrical characteristics and functions",
   "type": "object",

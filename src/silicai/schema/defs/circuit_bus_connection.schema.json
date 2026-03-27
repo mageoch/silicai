@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/mageoch/silicai/main/src/silicai/schema/defs/circuit_bus_connection.schema.json",
+  "$id": "https://mageoch.github.io/silicai/schema/defs/circuit_bus_connection.schema.json",
   "title": "Circuit Bus Connection",
   "description": "Connects a component instance to a circuit bus, optionally specifying which interface instance and pin assignments to use",
   "type": "object",

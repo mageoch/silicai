@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/mageoch/silicai/main/src/silicai/schema/defs/circuit_bus.schema.json",
+  "$id": "https://mageoch.github.io/silicai/schema/defs/circuit_bus.schema.json",
   "title": "Circuit Bus",
   "description": "A communication bus instantiated in a circuit",
   "type": "object",

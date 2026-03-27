@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/mageoch/silicai/main/src/silicai/schema/defs/alternate_function.schema.json",
+  "$id": "https://mageoch.github.io/silicai/schema/defs/alternate_function.schema.json",
   "title": "Alternate Pin Function",
   "description": "An alternate peripheral function available on a GPIO pin",
   "type": "object",

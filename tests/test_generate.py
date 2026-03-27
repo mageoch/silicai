@@ -1,7 +1,7 @@
 """Tests for write_kicad_sch() — schematic output correctness."""
 import pytest
 from pathlib import Path
-from silicai.generate import resolve, write_kicad_sch, _net_priority
+from silicai.generate import resolve, write_kicad_sch, write_kicad_project, _net_priority
 
 FIXTURES = Path(__file__).parent / "fixtures"
 COMP_LIB = [FIXTURES / "components"]
@@ -26,8 +26,10 @@ class TestPowerSymbols:
     def test_gnd_power_symbol_placed(self, simple_sch):
         assert 'lib_id "power:GND"' in simple_sch
 
-    def test_vcc_power_symbol_placed(self, simple_sch):
-        assert 'lib_id "power:VCC"' in simple_sch
+    def test_vcc_local_net_label_placed(self, simple_sch):
+        # The fixture sensor uses kicad_symbol TMP117xxYBG whose VCC pin is named "V+"
+        # (not "VCC"), so pin matching falls back to the decoupling local net label.
+        assert "U1_VCC" in simple_sch
 
     def test_no_global_label_for_power_nets(self, simple_sch):
         # Power nets should use symbols, not global labels
@@ -81,3 +83,28 @@ class TestSchematicOutput:
 
     def test_lib_symbols_section_present(self, simple_sch):
         assert "(lib_symbols" in simple_sch
+
+
+class TestProjectGeneration:
+    def test_project_creates_pro_file(self, tmp_path):
+        write_kicad_project(FIXTURES / "project.yaml", COMP_LIB, tmp_path, KICAD_LIB)
+        pro_files = list(tmp_path.glob("*.kicad_pro"))
+        assert len(pro_files) == 1
+
+    def test_project_creates_root_schematic(self, tmp_path):
+        write_kicad_project(FIXTURES / "project.yaml", COMP_LIB, tmp_path, KICAD_LIB)
+        sch_files = list(tmp_path.glob("*.kicad_sch"))
+        # root sch + one sub-sheet
+        assert len(sch_files) == 2
+
+    def test_project_root_schematic_has_sheet(self, tmp_path):
+        write_kicad_project(FIXTURES / "project.yaml", COMP_LIB, tmp_path, KICAD_LIB)
+        root_files = [f for f in tmp_path.glob("*.kicad_sch") if f.stem == "test_project"]
+        assert root_files, "Expected a root schematic named after the project"
+        assert "(sheet" in root_files[0].read_text()
+
+    def test_project_sub_sheet_is_valid_schematic(self, tmp_path):
+        write_kicad_project(FIXTURES / "project.yaml", COMP_LIB, tmp_path, KICAD_LIB)
+        sub_files = [f for f in tmp_path.glob("*.kicad_sch") if f.stem != "test_project"]
+        assert sub_files
+        assert sub_files[0].read_text().startswith("(kicad_sch")

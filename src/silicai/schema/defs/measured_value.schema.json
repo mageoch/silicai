@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/mageoch/silicai/main/src/silicai/schema/defs/measured_value.schema.json",
+  "$id": "https://mageoch.github.io/silicai/schema/defs/measured_value.schema.json",
   "title": "Measured Value",
   "description": "A numeric measurement with an explicit unit",
   "type": "object",

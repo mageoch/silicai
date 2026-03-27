@@ -534,8 +534,8 @@ def import_sheet(
 
 # ── YAML serialisation ────────────────────────────────────────────────────────
 
-_CIRCUIT_SCHEMA = "https://raw.githubusercontent.com/mageoch/silicai/main/src/silicai/schema/circuit.schema.json"
-_PROJECT_SCHEMA = "https://raw.githubusercontent.com/mageoch/silicai/main/src/silicai/schema/project.schema.json"
+_CIRCUIT_SCHEMA = "https://mageoch.github.io/silicai/schema/circuit.schema.json"
+_PROJECT_SCHEMA = "https://mageoch.github.io/silicai/schema/project.schema.json"
 _SCHEMA_VERSION = "0.1.0"
 
 

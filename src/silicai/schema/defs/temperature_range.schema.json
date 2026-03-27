@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/mageoch/silicai/main/src/silicai/schema/defs/temperature_range.schema.json",
+  "$id": "https://mageoch.github.io/silicai/schema/defs/temperature_range.schema.json",
   "title": "Temperature Range",
   "description": "Operating, storage, and thermal characteristics of a component",
   "type": "object",

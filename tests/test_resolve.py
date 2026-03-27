@@ -77,5 +77,7 @@ class TestDecoupling:
         passives = [p for p in r["parts"] if p.get("comp_def") is None]
         cap = next((p for p in passives if p["type"] == "capacitor"), None)
         assert cap is not None, "Expected a decoupling capacitor"
-        assert cap["pin_nets"]["1"] == "VCC"
+        # Per-pin decoupling caps use a local net (ref_RAIL) so they're
+        # visually anchored to the IC pin in the schematic.
+        assert cap["pin_nets"]["1"] == "U1_VCC"
         assert cap["pin_nets"]["2"] == "GND"

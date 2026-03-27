@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/mageoch/silicai/main/src/silicai/schema/defs/pin_function.schema.json",
+  "$id": "https://mageoch.github.io/silicai/schema/defs/pin_function.schema.json",
   "title": "Pin Function",
   "description": "Primary logical function of a pin",
   "type": "object",

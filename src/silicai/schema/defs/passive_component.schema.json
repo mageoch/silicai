@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/mageoch/silicai/main/src/silicai/schema/defs/passive_component.schema.json",
+  "$id": "https://mageoch.github.io/silicai/schema/defs/passive_component.schema.json",
   "title": "Passive Component",
   "description": "A passive component used in decoupling, filtering, or required external circuits",
   "type": "object",

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/mageoch/silicai/main/src/silicai/schema/component.schema.json",
+  "$id": "https://mageoch.github.io/silicai/schema/component.schema.json",
   "title": "SilicAI Component",
   "description": "Structured description of an electronic component for AI-assisted circuit design",
   "type": "object",
