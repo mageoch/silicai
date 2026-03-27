@@ -41,14 +41,16 @@ component_libraries = [
 ]
 ```
 
+## Installation
+
+```bash
+pip install silicai          # core tools
+pip install "silicai[mcp]"   # include MCP server
+```
+
 ## Usage
 
 ```bash
-# Clone with submodules
-git clone --recurse-submodules git@github.com:mageoch/silicai.git
-
-uv sync
-
 # Validate a component or circuit file
 silicai-validate path/to/component.yaml
 
@@ -57,6 +59,13 @@ silicai-generate path/to/circuit.yaml --output kicad/
 
 # Run the MCP server
 silicai-mcp --project-dir .
+```
+
+To contribute or work on SilicAI itself, clone with submodules:
+
+```bash
+git clone --recurse-submodules git@github.com:mageoch/silicai.git
+cd silicai && uv sync
 ```
 
 ## MCP Server
