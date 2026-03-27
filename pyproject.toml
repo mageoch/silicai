@@ -21,13 +21,6 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",
 ]
-
-[project.urls]
-Homepage = "https://github.com/mageoch/silicai"
-Documentation = "https://mageoch.github.io/silicai/"
-Repository = "https://github.com/mageoch/silicai"
-"Bug Tracker" = "https://github.com/mageoch/silicai/issues"
-
 dependencies = [
     "pyyaml",
     "jsonschema",
@@ -35,11 +28,27 @@ dependencies = [
     "kiutils",
 ]
 
+[project.urls]
+Homepage = "https://github.com/mageoch/silicai"
+Documentation = "https://mageoch.github.io/silicai/"
+Repository = "https://github.com/mageoch/silicai"
+"Bug Tracker" = "https://github.com/mageoch/silicai/issues"
+
 [project.scripts]
 silicai-validate = "silicai.validate:main"
 silicai-generate = "silicai.generate:main"
 silicai-import   = "silicai.import_kicad:main"
 silicai-mcp      = "silicai.mcp_server:main"
+
+[project.optional-dependencies]
+docs = [
+    "json-schema-for-humans",
+    "mkdocs",
+    "mkdocs-material>=9.5,<9.6",
+]
+mcp = [
+    "mcp>=1.0",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -61,13 +70,3 @@ explicit_start = false
 preserve_quotes = true
 section_whitelines = 1
 line_length = 120
-
-[project.optional-dependencies]
-docs = [
-    "json-schema-for-humans",
-    "mkdocs",
-    "mkdocs-material>=9.5,<9.6",
-]
-mcp = [
-    "mcp>=1.0",
-]
