@@ -27,16 +27,27 @@ src/silicai/
     circuit.schema.json
     project.schema.json
     defs/            Shared schema definitions
+  components/        Built-in component library (silicai-components submodule)
 nets/                Standard net definitions (GND, VCC_3V3, ...)
 tests/               Test suite
 ```
 
-The component library lives in the companion repository [mageoch/silicai-components](https://github.com/mageoch/silicai-components).
+The component library is bundled as a git submodule ([mageoch/silicai-components](https://github.com/mageoch/silicai-components)) and loaded automatically — no extra configuration needed. Additional component libraries can be declared in a project's `pyproject.toml`:
+
+```toml
+[tool.silicai]
+component_libraries = [
+    { path = "path/to/extra-components" },
+]
+```
 
 ## Usage
 
 ```bash
-uv pip install -e .
+# Clone with submodules
+git clone --recurse-submodules git@github.com:mageoch/silicai.git
+
+uv sync
 
 # Validate a component or circuit file
 silicai-validate path/to/component.yaml
