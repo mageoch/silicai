@@ -22,9 +22,15 @@ markdown_extensions:
 
 nav:
   - Home: index.md
-  - Component: schema/component.md
-  - Circuit: schema/circuit.md
-  - Project: schema/project.md
+  - Getting Started: getting-started.md
+  - Guides:
+    - Writing Components: writing-components.md
+    - Writing Circuits: writing-circuits.md
+    - Example Project: example-project.md
+  - Schema Reference:
+    - Component: schema/component.md
+    - Circuit: schema/circuit.md
+    - Project: schema/project.md
   - Definitions:
     - Pin: schema/defs/pin.md
     - Pin Function: schema/defs/pin_function.md

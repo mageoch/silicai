@@ -7,6 +7,6 @@ dist/
 .env
 scratch/
 
-# Generated documentation
-docs/
+# Generated documentation (docs/schema/ is built by `make docs-generate`)
+docs/schema/
 site/
