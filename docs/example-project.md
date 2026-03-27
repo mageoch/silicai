@@ -4,17 +4,15 @@
 
 ## Setup
 
-Clone the test project alongside `silicai` and `silicai-components`:
-
-```
-mageoch/
-├── silicai/               ← main library (with bundled components submodule)
-└── silicai-testproject/   ← this project
-```
-
 ```bash
 git clone git@github.com:mageoch/silicai-testproject.git
 cd silicai-testproject
+pip install silicai
+```
+
+Or with `uv`:
+
+```bash
 uv sync
 ```
 
@@ -116,7 +114,7 @@ circuit:
 ## Generating the schematic
 
 ```bash
-uv run silicai-generate project.yaml --output kicad/
+silicai-generate project.yaml --output kicad/
 ```
 
 SilicAI resolves the full netlist and writes:
