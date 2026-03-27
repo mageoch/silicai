@@ -6,8 +6,28 @@ build-backend = "setuptools.build_meta"
 name = "silicai"
 version = "0.1.0"
 description = "Structured electronic component descriptions for AI-assisted circuit design"
+readme = "README.md"
 license = { text = "PolyForm-Noncommercial-1.0.0" }
 requires-python = ">=3.11"
+authors = [
+    { name = "mageo services Sàrl", email = "info@mageo.ch" },
+]
+keywords = ["electronics", "eda", "kicad", "schematic", "ai", "mcp"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",
+]
+
+[project.urls]
+Homepage = "https://github.com/mageoch/silicai"
+Documentation = "https://mageoch.github.io/silicai/"
+Repository = "https://github.com/mageoch/silicai"
+"Bug Tracker" = "https://github.com/mageoch/silicai/issues"
+
 dependencies = [
     "pyyaml",
     "jsonschema",
