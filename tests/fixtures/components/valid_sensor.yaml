@@ -16,15 +16,15 @@ component:
   rails:
     - id: vcc
       net: VCC
-      per_pin_decoupling:
-        - type: capacitor
-          capacitance: { value: 100, unit: nF }
 
   pins:
     - number: 1
       name: VCC
       direction: power_in
       rail: vcc
+      decoupling:
+        - type: capacitor
+          capacitance: { value: 100, unit: nF }
     - number: 2
       name: GND
       direction: power_in

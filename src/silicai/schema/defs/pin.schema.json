@@ -34,6 +34,11 @@
       "description": "Passive components that must be placed externally for this pin to operate correctly (e.g. pull-up resistors, bypass capacitors)",
       "items": { "$ref": "passive_component.schema.json" }
     },
+    "decoupling": {
+      "type": "array",
+      "description": "Decoupling capacitors placed close to this power pin (one instance generated per pin)",
+      "items": { "$ref": "passive_component.schema.json" }
+    },
     "remark": { "type": "string", "description": "Free-form note about this pin (e.g. must be tied to GND, do not exceed 1.8V, connects to external crystal)" }
   }
 }

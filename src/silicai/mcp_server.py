@@ -304,12 +304,6 @@ component:
   rails:
     - id: vcc                   # id used by pin.rail and power_consumption.rail
       net: VCC                  # schematic net name (overridable per-instance in circuit YAML)
-      per_pin_decoupling:
-        - type: capacitor
-          capacitance: { value: 100, unit: nF }
-          voltage_rating: { value: 10, unit: V }
-          dielectric: [X5R, X7R]
-          placement: close
 
   # ── Pins (REQUIRED — list every pin) ──────────────────────────────────────
   pins:
@@ -318,6 +312,12 @@ component:
       direction: power_in       # input output bidirectional tri_state passive
                                 # open_collector open_emitter power_in power_out no_connect
       rail: vcc                 # references rail id above (for power pins)
+      decoupling:               # per-pin decoupling cap (one instance placed per pin)
+        - type: capacitor
+          capacitance: { value: 100, unit: nF }
+          voltage_rating: { value: 10, unit: V }
+          dielectric: [X5R, X7R]
+          placement: close
 
     - number: 2
       name: GND

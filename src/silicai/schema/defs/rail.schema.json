@@ -18,11 +18,6 @@
       "description": "Passive filter components placed on the input of this rail (e.g. ferrite bead)",
       "items": { "$ref": "passive_component.schema.json" }
     },
-    "per_pin_decoupling": {
-      "type": "array",
-      "description": "Decoupling capacitors placed close to each power pin",
-      "items": { "$ref": "passive_component.schema.json" }
-    },
     "bulk_decoupling": {
       "type": "array",
       "description": "Large bulk decoupling capacitors placed near the component",

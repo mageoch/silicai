@@ -252,21 +252,24 @@ def resolve(
                     add_passive("capacitor", _fmt_c(ext["capacitance"]), pin_net, ext_to,
                                 pin_annotation=pin_label)
 
-        # Per-pin decoupling caps — one cap per IC pin on the shared rail net.
-        # Grouped by rail net for horizontal bus layout in the schematic.
+        # Per-pin decoupling — defined directly on each pin.
+        # Caps on a rail are grouped together for the horizontal bus layout.
         for p in comp["pins"]:
-            rail_id = p.get("rail")
-            if not rail_id:
-                continue
-            rail_def = next((r for r in comp.get("rails", []) if r["id"] == rail_id), None)
-            if not rail_def:
-                continue
-            rnet = rail_net_map[rail_id]
-            for decoup in rail_def.get("per_pin_decoupling", []):
-                add_passive("capacitor", _fmt_c(decoup["capacitance"]),
-                            rnet, "GND",
-                            pin_annotation=f"{p['name']}[{p['number']}]",
-                            rail_group=rnet)
+            for decoup in p.get("decoupling", []):
+                pin_net = pin_nets.get(p["name"])
+                to_net  = decoup.get("to", "GND")
+                label   = f"{p['name']}[{p['number']}]"
+                rail_id = p.get("rail")
+                group   = rail_net_map.get(rail_id) if rail_id else None
+                ptype   = decoup["type"]
+                if ptype == "capacitor":
+                    add_passive("capacitor", _fmt_c(decoup["capacitance"]),
+                                pin_net, to_net,
+                                pin_annotation=label, rail_group=group)
+                elif ptype == "resistor":
+                    add_passive("resistor", _fmt_r(decoup["resistance"]),
+                                pin_net, to_net,
+                                pin_annotation=label)
 
     # Bus-level pull-up resistors — one per declared signal in pull_ups.
     # For shared buses, skip if pull-ups were already placed by a previous circuit.
