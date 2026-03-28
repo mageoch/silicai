@@ -29,7 +29,7 @@
       "description": "PCB routing constraints for this interface",
       "properties": {
         "differential_impedance": { "$ref": "measured_value.schema.json", "description": "Required differential trace impedance (e.g. 90 Ω for USB, 100 Ω for LVDS)" },
-        "length_mismatch_max":    { "$ref": "measured_value.schema.json", "description": "Maximum allowed length mismatch between signals of a differential pair (SI unit: mm)" }
+        "length_mismatch_max":    { "$ref": "measured_value.schema.json", "description": "Maximum allowed length mismatch between signals of a differential pair" }
       }
     }
   },

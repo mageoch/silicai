@@ -7,7 +7,7 @@
   "required": ["value", "unit"],
   "properties": {
     "value": { "type": "number", "description": "Numeric quantity" },
-    "unit":  { "type": "string", "description": "Unit of measurement (e.g. V, mA, nF, kHz, Ω)" }
+    "unit":  { "type": "string", "description": "Unit of measurement. Must be an SI unit or SI-derived unit, optionally with an SI prefix (e.g. V, mV, A, mA, Ω, kΩ, F, nF, µF, H, nH, Hz, kHz, MHz, W, mW, °C, m, mm). Dimensionless ratios such as ppm and % are also accepted." }
   },
   "additionalProperties": false
 }
