@@ -113,15 +113,16 @@ def resolve(
 
     def add_passive(ptype: str, value: str, net_1: str, net_2: str,
                     pin_annotation: str | None = None,
-                    rail_group: str | None = None) -> None:
+                    rail_group: str | None = None,
+                    pin_sort: int = 0) -> None:
         ref = alloc("R" if ptype == "resistor" else "C")
-        # Use KiCad pin numbers "1"/"2" as keys so they match the standard symbol
         part: dict = {"ref": ref, "type": ptype, "value": value,
                       "comp_def": None, "pin_nets": {"1": net_1, "2": net_2}}
         if pin_annotation:
             part["pin_annotation"] = pin_annotation
         if rail_group is not None:
             part["rail_group"] = rail_group
+            part["pin_sort"]   = pin_sort
         parts.append(part)
         connect(net_1, ref, "1")
         connect(net_2, ref, "2")
@@ -260,18 +261,19 @@ def resolve(
             for decoup in p.get("decoupling", []):
                 pin_net = pin_nets.get(p["name"])
                 to_net  = decoup.get("to", "GND")
-                label   = f"{p['name']}[{p['number']}]"
+                pin_num = int(p["number"]) if str(p["number"]).isdigit() else 0
                 rail_id = p.get("rail")
                 group   = rail_net_map.get(rail_id) if rail_id else None
                 ptype   = decoup["type"]
                 if ptype == "capacitor":
                     add_passive("capacitor", _fmt_c(decoup["capacitance"]),
                                 pin_net, to_net,
-                                pin_annotation=label, rail_group=group)
+                                pin_annotation=str(p["number"]),
+                                rail_group=group, pin_sort=pin_num)
                 elif ptype == "resistor":
                     add_passive("resistor", _fmt_r(decoup["resistance"]),
                                 pin_net, to_net,
-                                pin_annotation=label)
+                                pin_annotation=str(p["number"]))
 
         # Rail input filters — e.g. RC filter between a supply and a sensitive rail.
         # 'from'/'to' net names are resolved through the rail net map so that circuit-level
@@ -413,15 +415,15 @@ def _all_pins(sym) -> list:
 # ── Placement ─────────────────────────────────────────────────────────────────
 
 # Rail bus layout constants (all in mm, on 1.27 mm KiCad grid)
-_BUS_CAP_X     = 25.4   # X of first decoupling cap            (20 × 1.27)
-_BUS_TOP_Y     = 25.4   # Y of top (power) bus wire, row 0     (20 × 1.27)
-_BUS_BOT_Y     = 38.1   # Y of bottom (GND) bus wire, row 0   (30 × 1.27)
-_BUS_ROW_H     = 25.4   # vertical pitch between bus rows      (20 × 1.27)
-_CAP_STEP      = 12.7   # horizontal pitch between caps        (10 × 1.27)
-_BUS_LEAD      = 12.7   # X space from power sym to first cap  (10 × 1.27)
-_BUS_TRAIL     = 6.35   # X space from last cap to GND sym     ( 5 × 1.27)
-_CAP_PIN_OFF   = 3.81   # Device:C pin tip offset from centre  (verified from kicad_sym)
-_BUS_TO_IC_GAP = 50.8   # horizontal gap: bus right edge → IC  (40 × 1.27)
+_BUS_PWR_X     = 2.54   # X of power symbol (fixed left anchor) ( 2 × 1.27)
+_BUS_CAP_X     = 38.1   # X of first decoupling cap             (30 × 1.27)
+_BUS_TOP_Y     = 25.4   # Y of top (power) bus wire, row 0      (20 × 1.27)
+_BUS_BOT_Y     = 38.1   # Y of bottom (GND) bus wire, row 0    (30 × 1.27)
+_BUS_ROW_H     = (_BUS_BOT_Y - _BUS_TOP_Y) + 1.27  # row pitch = height + 1.27 gap
+_CAP_STEP      = 12.7   # horizontal pitch between caps         (10 × 1.27)
+_BUS_TRAIL     = 6.35   # X space from last cap to GND sym      ( 5 × 1.27)
+_CAP_PIN_OFF   = 3.81   # Device:C pin tip offset from centre   (verified from kicad_sym)
+_BUS_TO_IC_GAP = 50.8   # horizontal gap: bus right edge → IC   (40 × 1.27)
 _BUS_HALF_H    = (_BUS_BOT_Y - _BUS_TOP_Y) / 2  # 6.35 — cap centre to either wire
 
 
@@ -457,11 +459,14 @@ def _place(
         y_bot = _BUS_BOT_Y + row_idx * _BUS_ROW_H
         y_cap = y_top + _BUS_HALF_H          # cap centre, equidistant from both wires
 
+        # Sort caps by ascending pin number for consistent left-to-right ordering
+        caps.sort(key=lambda p: p.get("pin_sort", 0))
+
         first_x = _BUS_CAP_X
         for i, cap in enumerate(caps):
             placed.append((cap, first_x + i * _CAP_STEP, y_cap))
         last_x = first_x + (len(caps) - 1) * _CAP_STEP
-        x_pwr  = first_x - _BUS_LEAD        # power symbol left of first cap
+        x_pwr  = _BUS_PWR_X                 # fixed power symbol X (far left)
         x_gnd  = last_x  + _BUS_TRAIL       # GND symbol right of last cap
         bus_specs.append({
             "net":     net,
@@ -486,16 +491,15 @@ def _place(
         placed.append((ic, ic_x, ic_y))
         ic_y += 200.0
 
-    # ── Other passives (grid below bus rows, same x-extent as rails) ──────────
+    # ── Other passives (grid below bus rows, same spacing as bus caps) ────────
     pass_start_x = _BUS_CAP_X
     pass_start_y = last_bot_y + 30.48
     pass_per_row = max(1, int((rightmost_x - _BUS_TRAIL - pass_start_x) / _CAP_STEP) + 1)
-    _PASS_ROW_H  = 20.32
     for i, p in enumerate(other_passives):
         col = i % pass_per_row
         row = i // pass_per_row
         placed.append((p, pass_start_x + col * _CAP_STEP,
-                       pass_start_y + row * _PASS_ROW_H))
+                       pass_start_y + row * _BUS_ROW_H))
 
     return placed, bus_specs
 
