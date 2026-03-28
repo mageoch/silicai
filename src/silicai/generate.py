@@ -27,6 +27,14 @@ _PASSIVE_SYM = {
     "resistor": "Device:R",
     "capacitor": "Device:C",
     "inductor": "Device:L",
+    "crystal": "Device:Crystal",
+}
+
+_PASSIVE_PREFIX = {
+    "resistor": "R",
+    "capacitor": "C",
+    "inductor": "L",
+    "crystal": "X",
 }
 
 # KiCad GlobalLabel shapes match the pin direction on the IC.
@@ -112,7 +120,7 @@ def resolve(
         netlist.setdefault(net, []).append((ref, pin))
 
     def add_passive(ptype: str, value: str, net_1: str, net_2: str) -> None:
-        ref = alloc("R" if ptype == "resistor" else "C")
+        ref = alloc(_PASSIVE_PREFIX.get(ptype, "C"))
         # Use KiCad pin numbers "1"/"2" as keys so they match the standard symbol
         parts.append({"ref": ref, "type": ptype, "value": value,
                       "comp_def": None, "pin_nets": {"1": net_1, "2": net_2}})
@@ -252,6 +260,13 @@ def resolve(
                     add_passive("resistor", _fmt_r(ext["resistance"]), pin_net, ext_to)
                 elif ext["type"] == "capacitor":
                     add_passive("capacitor", _fmt_c(ext["capacitance"]), pin_net, ext_to)
+                elif ext["type"] == "inductor":
+                    add_passive("inductor", _fmt_l(ext["inductance"]), pin_net, ext_to)
+                elif ext["type"] == "crystal":
+                    add_passive("crystal", _fmt_xtal(ext["frequency"]), pin_net, ext_to)
+                else:
+                    print(f"warning: unknown required_external type {ext['type']!r} on pin "
+                          f"{p['name']!r} — skipped", file=sys.stderr)
 
         # Per-rail decoupling caps — use local net so the cap is anchored to its IC pin.
         for rail in comp.get("rails", []):
@@ -309,6 +324,12 @@ def _fmt_r(r: dict) -> str:
 
 def _fmt_c(c: dict) -> str:
     return f"{c['value']}{c['unit']}"
+
+def _fmt_l(l: dict) -> str:
+    return f"{l['value']}{l['unit']}"
+
+def _fmt_xtal(f: dict) -> str:
+    return f"{f['value']}{f['unit']}"
 
 
 # ── KiCad symbol loading ──────────────────────────────────────────────────────

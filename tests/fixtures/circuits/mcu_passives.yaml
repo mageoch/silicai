@@ -1,0 +1,16 @@
+$schema: "https://mageoch.github.io/silicai/schema/circuit.schema.json"
+$schema_version: "0.1.0"
+
+circuit:
+  name: MCU passives test circuit
+  description: Circuit for testing inductor and crystal required_external handling
+
+  power_rails:
+    - net: DVDD
+    - net: GND
+
+  instances:
+    - ref: U1
+      mpn: TEST_MCU_PASSIVES_001
+      rails:
+        dvdd: DVDD

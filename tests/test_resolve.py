@@ -81,3 +81,91 @@ class TestDecoupling:
         # visually anchored to the IC pin in the schematic.
         assert cap["pin_nets"]["1"] == "U1_VCC"
         assert cap["pin_nets"]["2"] == "GND"
+
+
+class TestInductorAndCrystal:
+    def test_inductor_in_parts(self):
+        r = _resolve("mcu_passives.yaml")
+        inductors = [p for p in r["parts"] if p.get("type") == "inductor"]
+        assert len(inductors) == 1
+
+    def test_inductor_value(self):
+        r = _resolve("mcu_passives.yaml")
+        ind = next(p for p in r["parts"] if p.get("type") == "inductor")
+        assert ind["value"] == "3.3µH"
+
+    def test_inductor_ref_prefix(self):
+        r = _resolve("mcu_passives.yaml")
+        ind = next(p for p in r["parts"] if p.get("type") == "inductor")
+        assert ind["ref"].startswith("L")
+
+    def test_inductor_nets(self):
+        r = _resolve("mcu_passives.yaml")
+        ind = next(p for p in r["parts"] if p.get("type") == "inductor")
+        nets = set(ind["pin_nets"].values())
+        assert "U1_VREG_LX" in nets
+        assert "DVDD" in nets
+
+    def test_inductor_in_netlist(self):
+        r = _resolve("mcu_passives.yaml")
+        ind = next(p for p in r["parts"] if p.get("type") == "inductor")
+        ref = ind["ref"]
+        all_refs = {r for conns in r["netlist"].values() for r, _ in conns}
+        assert ref in all_refs
+
+    def test_crystal_in_parts(self):
+        r = _resolve("mcu_passives.yaml")
+        xtals = [p for p in r["parts"] if p.get("type") == "crystal"]
+        assert len(xtals) == 1
+
+    def test_crystal_value(self):
+        r = _resolve("mcu_passives.yaml")
+        xtal = next(p for p in r["parts"] if p.get("type") == "crystal")
+        assert xtal["value"] == "12MHz"
+
+    def test_crystal_ref_prefix(self):
+        r = _resolve("mcu_passives.yaml")
+        xtal = next(p for p in r["parts"] if p.get("type") == "crystal")
+        assert xtal["ref"].startswith("X")
+
+    def test_crystal_nets(self):
+        r = _resolve("mcu_passives.yaml")
+        xtal = next(p for p in r["parts"] if p.get("type") == "crystal")
+        nets = set(xtal["pin_nets"].values())
+        assert "U1_XIN" in nets
+        assert "U1_XOUT" in nets
+
+    def test_crystal_in_netlist(self):
+        r = _resolve("mcu_passives.yaml")
+        xtal = next(p for p in r["parts"] if p.get("type") == "crystal")
+        ref = xtal["ref"]
+        all_refs = {r for conns in r["netlist"].values() for r, _ in conns}
+        assert ref in all_refs
+
+    def test_unknown_type_warns(self, tmp_path, capsys):
+        import yaml as _yaml
+        from silicai.generate import resolve as _resolve_fn
+        comp = tmp_path / "comp.yaml"
+        comp.write_text(_yaml.dump({
+            "component": {
+                "mpn": "TEST_UNKNOWN_EXT",
+                "manufacturer": "X", "category": "other", "package": "SOT-23",
+                "kicad_symbol": "Device:R",
+                "pins": [
+                    {"number": 1, "name": "A", "direction": "passive",
+                     "required_external": [{"type": "foobar", "to": "GND"}]},
+                    {"number": 2, "name": "B", "direction": "passive", "net": "GND"},
+                ],
+            }
+        }))
+        circuit = tmp_path / "c.yaml"
+        circuit.write_text(_yaml.dump({
+            "circuit": {
+                "name": "unknown ext test",
+                "instances": [{"ref": "U1", "mpn": "TEST_UNKNOWN_EXT"}],
+            }
+        }))
+        _resolve_fn(circuit, [tmp_path])
+        captured = capsys.readouterr()
+        assert "warning" in captured.err
+        assert "foobar" in captured.err
