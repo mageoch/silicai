@@ -111,11 +111,15 @@ def resolve(
     def connect(net: str, ref: str, pin: str) -> None:
         netlist.setdefault(net, []).append((ref, pin))
 
-    def add_passive(ptype: str, value: str, net_1: str, net_2: str) -> None:
+    def add_passive(ptype: str, value: str, net_1: str, net_2: str,
+                    pin_annotation: str | None = None) -> None:
         ref = alloc("R" if ptype == "resistor" else "C")
         # Use KiCad pin numbers "1"/"2" as keys so they match the standard symbol
-        parts.append({"ref": ref, "type": ptype, "value": value,
-                      "comp_def": None, "pin_nets": {"1": net_1, "2": net_2}})
+        part: dict = {"ref": ref, "type": ptype, "value": value,
+                      "comp_def": None, "pin_nets": {"1": net_1, "2": net_2}}
+        if pin_annotation:
+            part["pin_annotation"] = pin_annotation
+        parts.append(part)
         connect(net_1, ref, "1")
         connect(net_2, ref, "2")
 
@@ -214,22 +218,27 @@ def resolve(
             pin_nets[pname] = net
             connect(net, ref, pname)
 
-        # Compute local nets for rails with per-pin decoupling.
-        # e.g. RP2350A rail "iovdd" on ref "U2" → local net "U2_IOVDD".
-        # These local nets are placed alongside the power symbol at each rail pin
-        # so that the decoupling cap is visually anchored to its IC pin.
-        rail_local_nets: dict[str, str] = {
-            rail["id"]: f"{ref}_{rail['id'].upper()}"
-            for rail in comp.get("rails", [])
-            if rail.get("per_pin_decoupling")
-        }
+        # Build per-pin local nets for rails with per_pin_decoupling.
+        # One unique net per IC pin (e.g. U2_IOVDD_5, U2_IOVDD_15 …) so that
+        # each pin gets its own dedicated decoupling cap and annotation.
+        # Keyed by str(pin_number) to allow lookup by KiCad pin number in the sch writer.
+        pin_decoup_nets: dict[str, str] = {}  # pin_number → local_net_name
+        for p in comp["pins"]:
+            rail_id = p.get("rail")
+            if not rail_id:
+                continue
+            rail_def = next((r for r in comp.get("rails", []) if r["id"] == rail_id), None)
+            if not rail_def or not rail_def.get("per_pin_decoupling"):
+                continue
+            pin_decoup_nets[str(p["number"])] = f"{ref}_{rail_id.upper()}_{p['number']}"
 
         parts.append({"ref": ref, "mpn": mpn, "comp_def": comp, "pin_nets": pin_nets,
-                      "rail_local_nets": rail_local_nets})
+                      "pin_decoup_nets": pin_decoup_nets})
 
         # Required externals on pins
         for p in comp["pins"]:
             pin_net = pin_nets[p["name"]]
+            pin_label = f"{p['name']}[{p['number']}]"
             for ext in p.get("required_external", []):
                 scope = ext.get("scope", "component")
                 ext_to = default_to_actual.get(ext["to"], ext["to"])
@@ -249,17 +258,26 @@ def resolve(
                         continue
                     placed.add(key)
                 if ext["type"] == "resistor":
-                    add_passive("resistor", _fmt_r(ext["resistance"]), pin_net, ext_to)
+                    add_passive("resistor", _fmt_r(ext["resistance"]), pin_net, ext_to,
+                                pin_annotation=pin_label)
                 elif ext["type"] == "capacitor":
-                    add_passive("capacitor", _fmt_c(ext["capacitance"]), pin_net, ext_to)
+                    add_passive("capacitor", _fmt_c(ext["capacitance"]), pin_net, ext_to,
+                                pin_annotation=pin_label)
 
-        # Per-rail decoupling caps — use local net so the cap is anchored to its IC pin.
-        for rail in comp.get("rails", []):
-            rail_net = rail_net_map[rail["id"]]
-            local_net = rail_local_nets.get(rail["id"])
-            cap_net = local_net if local_net else rail_net
-            for decoup in rail.get("per_pin_decoupling", []):
-                add_passive("capacitor", _fmt_c(decoup["capacitance"]), cap_net, "GND")
+        # Per-pin decoupling caps — one cap per IC pin, each on its own local net.
+        for p in comp["pins"]:
+            rail_id = p.get("rail")
+            if not rail_id:
+                continue
+            rail_def = next((r for r in comp.get("rails", []) if r["id"] == rail_id), None)
+            if not rail_def:
+                continue
+            local_net = pin_decoup_nets.get(str(p["number"]))
+            cap_net = local_net if local_net else rail_net_map[rail_id]
+            for decoup in rail_def.get("per_pin_decoupling", []):
+                add_passive("capacitor", _fmt_c(decoup["capacitance"]),
+                            cap_net, "GND",
+                            pin_annotation=f"{p['name']}[{p['number']}]")
 
     # Bus-level pull-up resistors — one per declared signal in pull_ups.
     # For shared buses, skip if pull-ups were already placed by a previous circuit.
@@ -293,9 +311,9 @@ def resolve(
 
     # Collect all local decoupling net names (used to render them as LocalLabel)
     local_nets: set[str] = {
-        local
+        net
         for part in parts
-        for local in part.get("rail_local_nets", {}).values()
+        for net in part.get("pin_decoup_nets", {}).values()
     }
 
     return {"name": circuit["name"], "parts": parts, "netlist": netlist,
@@ -524,6 +542,15 @@ def write_kicad_sch(resolved: dict, output: Path, kicad_lib_path: Path) -> None:
                     prop.effects = Effects(font=Font(height=1.27, width=1.27))
                 prop.effects.hide = True
 
+        # Add a visible "Pin" annotation for passives generated from a specific IC pin.
+        # Positioned below the Value label (≈1.5 mm below cap body centre).
+        if "pin_annotation" in part:
+            ann = Property(key="Pin", value=part["pin_annotation"])
+            ann.id = len(inst.properties)
+            ann.position = Position(X=cx + 1.016, Y=cy + 2.54)
+            ann.effects = Effects(font=Font(height=1.0, width=1.0))
+            inst.properties.append(ann)
+
         # Register pin UUIDs (required by KiCad)
         for p in _all_pins(lib_sym):
             inst.pins[p.number] = str(uuid.uuid4())
@@ -537,17 +564,16 @@ def write_kicad_sch(resolved: dict, output: Path, kicad_lib_path: Path) -> None:
                 direction = p_def.get("direction", "bidirectional")
                 pin_shapes[p_def["name"]] = _DIR_TO_SHAPE.get(direction, "bidirectional")
 
-        # Build pin-name → local net for IC rail pins that have per-pin decoupling.
-        # The local net label is placed alongside the power symbol at the pin so that
-        # the decoupling cap (which uses the local net) is visually anchored here.
+        # Build KiCad-pin-number → local net for IC rail pins with per-pin decoupling.
+        # Keyed by pin number (not name) so that pins sharing the same name (e.g. all
+        # IOVDD pins) each resolve to their own dedicated decoupling net.
         pin_to_local_net: dict[str, str] = {}
         if part.get("comp_def"):
+            pin_decoup_nets = part.get("pin_decoup_nets", {})
             for p_def in part["comp_def"]["pins"]:
-                rail_id = p_def.get("rail")
-                if rail_id:
-                    local = part.get("rail_local_nets", {}).get(rail_id)
-                    if local:
-                        pin_to_local_net[p_def["name"]] = local
+                local = pin_decoup_nets.get(str(p_def["number"]))
+                if local:
+                    pin_to_local_net[str(p_def["number"])] = local
 
         # For passives: swap pin_nets if pin 2 has higher priority than pin 1
         # so that power supplies end up at the top (pin 1) and GND at the bottom (pin 2).
@@ -577,7 +603,7 @@ def write_kicad_sch(resolved: dict, output: Path, kicad_lib_path: Path) -> None:
 
             # Power rail nets use a power symbol (body up for supply, down for GND)
             if net in power_nets:
-                local_net = pin_to_local_net.get(p.name)
+                local_net = pin_to_local_net.get(str(p.number))
                 if local_net:
                     # Wire stub: IC pin ──[LocalLabel]── wire ──[power symbol]
                     # LocalLabel at the IC pin end labels the wire; power symbol at far end.
