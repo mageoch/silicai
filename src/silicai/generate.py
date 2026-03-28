@@ -11,7 +11,7 @@ from pathlib import Path
 
 import yaml
 from importlib.resources import files
-from kiutils.schematic import Schematic
+from kiutils.schematic import Schematic, Junction
 from kiutils.symbol import SymbolLib
 from kiutils.items.schitems import (
     SchematicSymbol, GlobalLabel, LocalLabel, Connection,
@@ -112,13 +112,16 @@ def resolve(
         netlist.setdefault(net, []).append((ref, pin))
 
     def add_passive(ptype: str, value: str, net_1: str, net_2: str,
-                    pin_annotation: str | None = None) -> None:
+                    pin_annotation: str | None = None,
+                    rail_group: str | None = None) -> None:
         ref = alloc("R" if ptype == "resistor" else "C")
         # Use KiCad pin numbers "1"/"2" as keys so they match the standard symbol
         part: dict = {"ref": ref, "type": ptype, "value": value,
                       "comp_def": None, "pin_nets": {"1": net_1, "2": net_2}}
         if pin_annotation:
             part["pin_annotation"] = pin_annotation
+        if rail_group is not None:
+            part["rail_group"] = rail_group
         parts.append(part)
         connect(net_1, ref, "1")
         connect(net_2, ref, "2")
@@ -218,22 +221,7 @@ def resolve(
             pin_nets[pname] = net
             connect(net, ref, pname)
 
-        # Build per-pin local nets for rails with per_pin_decoupling.
-        # One unique net per IC pin (e.g. U2_IOVDD_5, U2_IOVDD_15 …) so that
-        # each pin gets its own dedicated decoupling cap and annotation.
-        # Keyed by str(pin_number) to allow lookup by KiCad pin number in the sch writer.
-        pin_decoup_nets: dict[str, str] = {}  # pin_number → local_net_name
-        for p in comp["pins"]:
-            rail_id = p.get("rail")
-            if not rail_id:
-                continue
-            rail_def = next((r for r in comp.get("rails", []) if r["id"] == rail_id), None)
-            if not rail_def or not rail_def.get("per_pin_decoupling"):
-                continue
-            pin_decoup_nets[str(p["number"])] = f"{ref}_{rail_id.upper()}_{p['number']}"
-
-        parts.append({"ref": ref, "mpn": mpn, "comp_def": comp, "pin_nets": pin_nets,
-                      "pin_decoup_nets": pin_decoup_nets})
+        parts.append({"ref": ref, "mpn": mpn, "comp_def": comp, "pin_nets": pin_nets})
 
         # Required externals on pins
         for p in comp["pins"]:
@@ -264,7 +252,8 @@ def resolve(
                     add_passive("capacitor", _fmt_c(ext["capacitance"]), pin_net, ext_to,
                                 pin_annotation=pin_label)
 
-        # Per-pin decoupling caps — one cap per IC pin, each on its own local net.
+        # Per-pin decoupling caps — one cap per IC pin on the shared rail net.
+        # Grouped by rail net for horizontal bus layout in the schematic.
         for p in comp["pins"]:
             rail_id = p.get("rail")
             if not rail_id:
@@ -272,12 +261,12 @@ def resolve(
             rail_def = next((r for r in comp.get("rails", []) if r["id"] == rail_id), None)
             if not rail_def:
                 continue
-            local_net = pin_decoup_nets.get(str(p["number"]))
-            cap_net = local_net if local_net else rail_net_map[rail_id]
+            rnet = rail_net_map[rail_id]
             for decoup in rail_def.get("per_pin_decoupling", []):
                 add_passive("capacitor", _fmt_c(decoup["capacitance"]),
-                            cap_net, "GND",
-                            pin_annotation=f"{p['name']}[{p['number']}]")
+                            rnet, "GND",
+                            pin_annotation=f"{p['name']}[{p['number']}]",
+                            rail_group=rnet)
 
     # Bus-level pull-up resistors — one per declared signal in pull_ups.
     # For shared buses, skip if pull-ups were already placed by a previous circuit.
@@ -309,12 +298,7 @@ def resolve(
             for rail in comp_def.get("rails", []):
                 power_nets.add(rail["net"])
 
-    # Collect all local decoupling net names (used to render them as LocalLabel)
-    local_nets: set[str] = {
-        net
-        for part in parts
-        for net in part.get("pin_decoup_nets", {}).values()
-    }
+    local_nets: set[str] = set()  # reserved for future local-net use
 
     return {"name": circuit["name"], "parts": parts, "netlist": netlist,
             "power_nets": power_nets, "local_nets": local_nets}
@@ -361,18 +345,86 @@ def _all_pins(sym) -> list:
 
 # ── Placement ─────────────────────────────────────────────────────────────────
 
-def _place(parts: list[dict]) -> list[tuple[dict, float, float]]:
-    result = []
-    ic_x, ic_y   = 50.0, 60.0
-    pass_x, pass_y = 120.0, 30.0
-    for part in parts:
-        if part.get("comp_def") is not None:
-            result.append((part, ic_x, ic_y))
-            ic_y += 200.0
-        else:
-            result.append((part, pass_x, pass_y))
-            pass_y += 30.0
-    return result
+# Rail bus layout constants (all in mm, on 1.27 mm KiCad grid)
+_BUS_START_X   = 20.32  # left origin of the bus section       (16 × 1.27)
+_BUS_START_Y   = 30.48  # Y centre of the first bus row        (24 × 1.27)
+_BUS_ROW_H     = 35.56  # vertical pitch between bus rows      (28 × 1.27)
+_CAP_STEP      = 10.16  # horizontal pitch between caps        ( 8 × 1.27)
+_BUS_LEAD      = 10.16  # space left of first cap (power sym)  ( 8 × 1.27)
+_BUS_TRAIL     = 5.08   # space right of last cap (GND sym)    ( 4 × 1.27)
+_CAP_PIN_OFF   = 3.81   # Device:C pin tip offset from centre  (verified from kicad_sym)
+_BUS_TO_IC_GAP = 50.8   # horizontal gap: bus right edge → IC  (40 × 1.27)
+_PASS_STEP     = 25.4   # vertical pitch between other passives (20 × 1.27)
+
+
+def _place(
+    parts: list[dict],
+) -> tuple[list[tuple[dict, float, float]], list[dict]]:
+    """
+    Assign schematic positions to all parts.
+
+    Returns:
+        placed    – list of (part, x, y)
+        bus_specs – one entry per rail group:
+                    {"net": str, "gnd": str,
+                     "x_pwr": float,   "x_top_r": float,
+                     "x_bot_l": float, "x_gnd": float, "y": float}
+                    x_pwr/x_top_r span the top (supply) wire;
+                    x_bot_l/x_gnd span the bottom (GND) wire.
+    """
+    ics            = [p for p in parts if p.get("comp_def") is not None]
+    rail_caps      = [p for p in parts if p.get("comp_def") is None and "rail_group" in p]
+    other_passives = [p for p in parts if p.get("comp_def") is None and "rail_group" not in p]
+
+    placed: list[tuple[dict, float, float]] = []
+    bus_specs: list[dict] = []
+
+    # ── Horizontal bus rows (one row per rail group) ───────────────────────────
+    groups: dict[str, list[dict]] = {}
+    for cap in rail_caps:
+        groups.setdefault(cap["rail_group"], []).append(cap)
+
+    bus_y = _BUS_START_Y
+    rightmost_x = _BUS_START_X
+    for net, caps in groups.items():
+        first_x = _BUS_START_X + _BUS_LEAD
+        for i, cap in enumerate(caps):
+            placed.append((cap, first_x + i * _CAP_STEP, bus_y))
+        last_x = first_x + (len(caps) - 1) * _CAP_STEP
+        x_pwr  = _BUS_START_X          # power symbol at left of top wire
+        x_gnd  = last_x + _BUS_TRAIL   # GND symbol at right of bottom wire
+        bus_specs.append({
+            "net":     net,
+            "gnd":     caps[0]["pin_nets"]["2"],
+            "x_pwr":   x_pwr,    # top wire left end (= power symbol position)
+            "x_top_r": last_x,   # top wire right end (= last cap pin 1)
+            "x_bot_l": first_x,  # bottom wire left end (= first cap pin 2)
+            "x_gnd":   x_gnd,    # bottom wire right end (= GND symbol position)
+            "y":       bus_y,
+        })
+        rightmost_x = max(rightmost_x, x_gnd)
+        bus_y += _BUS_ROW_H
+
+    # ── ICs (right of bus section, below the last bus row) ────────────────────
+    ic_x = rightmost_x + _BUS_TO_IC_GAP
+    ic_y = bus_y + 30.48  # 24 grid units below last bus row
+    for ic in ics:
+        placed.append((ic, ic_x, ic_y))
+        ic_y += 200.0
+
+    # ── Other passives (grid below bus rows, same x-extent as rails) ──────────
+    pass_start_x = _BUS_START_X + _BUS_LEAD
+    pass_start_y = bus_y + 30.48  # 24 grid units below last bus row
+    # How many passives fit per row without exceeding the widest bus row
+    pass_per_row = max(1, int((rightmost_x - _BUS_TRAIL - pass_start_x) / _CAP_STEP) + 1)
+    _PASS_ROW_H = 20.32  # 16 grid units — row pitch for the passive grid
+    for i, p in enumerate(other_passives):
+        col = i % pass_per_row
+        row = i // pass_per_row
+        placed.append((p, pass_start_x + col * _CAP_STEP,
+                       pass_start_y + row * _PASS_ROW_H))
+
+    return placed, bus_specs
 
 
 # ── Passive orientation ───────────────────────────────────────────────────────
@@ -486,7 +538,8 @@ def write_kicad_sch(resolved: dict, output: Path, kicad_lib_path: Path) -> None:
     local_nets = resolved.get("local_nets", set())
     pwr_counter = [0]
 
-    for part, cx, cy in _place(resolved["parts"]):
+    placed, bus_specs = _place(resolved["parts"])
+    for part, cx, cy in placed:
         # Resolve KiCad symbol name
         if part.get("comp_def"):
             kicad_sym = part["comp_def"].get("kicad_symbol")
@@ -543,12 +596,16 @@ def write_kicad_sch(resolved: dict, output: Path, kicad_lib_path: Path) -> None:
                 prop.effects.hide = True
 
         # Add a visible "Pin" annotation for passives generated from a specific IC pin.
-        # Positioned below the Value label (≈1.5 mm below cap body centre).
+        # Rotated 90° CW (angle=270) below the bottom bus wire so it reads downward
+        # and takes minimal horizontal space — avoids overlap in dense bus rows.
         if "pin_annotation" in part:
             ann = Property(key="Pin", value=part["pin_annotation"])
             ann.id = len(inst.properties)
-            ann.position = Position(X=cx + 1.016, Y=cy + 2.54)
+            # Anchor at top of vertical text (angle=270 → text reads top-to-bottom).
+            # Top of label = 1 grid unit (1.27 mm) below the GND bus wire (pin 2).
+            ann.position = Position(X=cx, Y=cy + _CAP_PIN_OFF + 1.27, angle=270)
             ann.effects = Effects(font=Font(height=1.0, width=1.0))
+            ann.effects.justify = Justify(horizontally="left")
             inst.properties.append(ann)
 
         # Register pin UUIDs (required by KiCad)
@@ -564,16 +621,7 @@ def write_kicad_sch(resolved: dict, output: Path, kicad_lib_path: Path) -> None:
                 direction = p_def.get("direction", "bidirectional")
                 pin_shapes[p_def["name"]] = _DIR_TO_SHAPE.get(direction, "bidirectional")
 
-        # Build KiCad-pin-number → local net for IC rail pins with per-pin decoupling.
-        # Keyed by pin number (not name) so that pins sharing the same name (e.g. all
-        # IOVDD pins) each resolve to their own dedicated decoupling net.
-        pin_to_local_net: dict[str, str] = {}
-        if part.get("comp_def"):
-            pin_decoup_nets = part.get("pin_decoup_nets", {})
-            for p_def in part["comp_def"]["pins"]:
-                local = pin_decoup_nets.get(str(p_def["number"]))
-                if local:
-                    pin_to_local_net[str(p_def["number"])] = local
+        pin_to_local_net: dict[str, str] = {}  # reserved for future local-net routing
 
         # For passives: swap pin_nets if pin 2 has higher priority than pin 1
         # so that power supplies end up at the top (pin 1) and GND at the bottom (pin 2).
@@ -586,6 +634,10 @@ def write_kicad_sch(resolved: dict, output: Path, kicad_lib_path: Path) -> None:
             # Match by pin name (ICs) or pin number (passives, where name is '~')
             net = pin_nets.get(p.name) or pin_nets.get(p.number)
             if net is None:
+                continue
+
+            # Rail bus caps connect via the horizontal bus wire — skip individual labels.
+            if "rail_group" in part:
                 continue
 
             pin_x = cx + p.position.X
@@ -638,6 +690,59 @@ def write_kicad_sch(resolved: dict, output: Path, kicad_lib_path: Path) -> None:
                 lbl.effects.justify = Justify(horizontally=justify)
                 lbl.uuid = str(uuid.uuid4())
                 sch.globalLabels.append(lbl)
+
+    # ── Horizontal rail bus wires + junction markers ──────────────────────────
+    for bus in bus_specs:
+        top_y = bus["y"] - _CAP_PIN_OFF
+        bot_y = bus["y"] + _CAP_PIN_OFF
+        first_x = bus["x_bot_l"]  # first cap x (= bottom wire left endpoint)
+        last_x  = bus["x_top_r"]  # last cap x  (= top wire right endpoint)
+
+        # Top wire: power symbol → last cap's pin 1 (does NOT extend past last cap)
+        sch.graphicalItems.append(_make_wire(bus["x_pwr"], top_y, last_x, top_y))
+        # Bottom wire: first cap's pin 2 → GND symbol (does NOT extend before first cap)
+        sch.graphicalItems.append(_make_wire(first_x, bot_y, bus["x_gnd"], bot_y))
+
+        # Explicit junctions at T-intersections (KiCad requires them for pins on wire)
+        n_caps = int(round((last_x - first_x) / _CAP_STEP)) + 1
+        for i in range(n_caps):
+            cap_x = first_x + i * _CAP_STEP
+            # Top wire: every cap except the last (its pin IS the right wire endpoint)
+            if i < n_caps - 1:
+                j = Junction()
+                j.position = Position(X=cap_x, Y=top_y)
+                j.uuid = str(uuid.uuid4())
+                sch.junctions.append(j)
+            # Bottom wire: every cap except the first (its pin IS the left wire endpoint)
+            if i > 0:
+                j = Junction()
+                j.position = Position(X=cap_x, Y=bot_y)
+                j.uuid = str(uuid.uuid4())
+                sch.junctions.append(j)
+        # Supply symbol (or GlobalLabel fallback) at left end of top wire
+        if not _place_power_symbol(sch, bus["net"], bus["x_pwr"], top_y,
+                                   kicad_lib_path, added_syms, pwr_counter):
+            lbl = GlobalLabel()
+            lbl.text = bus["net"]
+            lbl.shape = "passive"
+            lbl.position = Position(X=bus["x_pwr"], Y=top_y, angle=180)
+            lbl.fieldsAutoplaced = True
+            lbl.effects = copy.deepcopy(label_effects)
+            lbl.effects.justify = Justify(horizontally="right")
+            lbl.uuid = str(uuid.uuid4())
+            sch.globalLabels.append(lbl)
+        # GND symbol (or GlobalLabel fallback) at right end of bottom wire
+        if not _place_power_symbol(sch, bus["gnd"], bus["x_gnd"], bot_y,
+                                   kicad_lib_path, added_syms, pwr_counter):
+            lbl = GlobalLabel()
+            lbl.text = bus["gnd"]
+            lbl.shape = "passive"
+            lbl.position = Position(X=bus["x_gnd"], Y=bot_y, angle=0)
+            lbl.fieldsAutoplaced = True
+            lbl.effects = copy.deepcopy(label_effects)
+            lbl.effects.justify = Justify(horizontally="left")
+            lbl.uuid = str(uuid.uuid4())
+            sch.globalLabels.append(lbl)
 
     sch.to_file(str(output))
     print(f"✓ {output}")

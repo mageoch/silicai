@@ -26,10 +26,10 @@ class TestPowerSymbols:
     def test_gnd_power_symbol_placed(self, simple_sch):
         assert 'lib_id "power:GND"' in simple_sch
 
-    def test_vcc_local_net_label_placed(self, simple_sch):
-        # The fixture sensor uses kicad_symbol TMP117xxYBG whose VCC pin is named "V+"
-        # (not "VCC"), so pin matching falls back to the decoupling local net label.
-        assert "U1_VCC" in simple_sch
+    def test_vcc_power_symbol_placed(self, simple_sch):
+        # Decoupling caps connect to the shared rail net via a horizontal bus wire;
+        # a VCC power symbol should appear at the left end of that bus.
+        assert 'lib_id "power:VCC"' in simple_sch
 
     def test_no_global_label_for_power_nets(self, simple_sch):
         # Power nets should use symbols, not global labels
