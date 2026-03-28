@@ -14,7 +14,8 @@ jobs:
        github.event.comment.author_association == 'COLLABORATOR')
     permissions:
       issues: write
-      contents: read
+      contents: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
       - uses: anthropics/claude-code-action@beta
