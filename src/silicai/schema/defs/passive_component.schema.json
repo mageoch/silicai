@@ -43,6 +43,10 @@
       "description": "Required placement proximity relative to the associated pin or component",
       "enum": ["close", "nearby", "per_pin", "per_component"]
     },
+    "orientation": {
+      "type": "string",
+      "description": "Required mounting orientation for orientation-sensitive components (e.g. shielded inductors whose magnetic field direction affects adjacent components). Presence of this field implies the component must not be rotated arbitrarily. Value should describe the correct placement direction (e.g. 'winding-start towards output capacitor')."
+    },
     "quantity": {
       "type": "string",
       "description": "How many instances of this component are needed",
@@ -53,8 +57,8 @@
       "enum": ["component", "bus"],
       "description": "component: one per IC instance. bus: shared across all devices on the bus."
     },
-    "from": { "type": "string", "description": "Source pin name this component connects from" },
-    "to":   { "type": "string", "description": "Destination net name this component connects to" },
+    "from": { "type": "string", "description": "Source net or pin name this component connects from (net name in rail input_filter context; pin name in required_external context)" },
+    "to":   { "type": "string", "description": "Destination net or pin name this component connects to" },
     "remark": { "type": "string", "description": "Free-form note about why this component is needed or how to select it" }
   }
 }
