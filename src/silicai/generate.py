@@ -591,6 +591,16 @@ def write_kicad_sch(resolved: dict, output: Path, kicad_lib_path: Path) -> None:
 
         # Add to lib_symbols once per unique symbol
         if kicad_sym not in added_syms:
+            # If this symbol extends a parent, embed the parent first
+            if lib_sym.extends:
+                parent_id = f"{kicad_sym.split(':')[0]}:{lib_sym.extends}"
+                if parent_id not in added_syms:
+                    try:
+                        parent_sym = _load_kicad_sym(parent_id, kicad_lib_path)
+                        sch.libSymbols.append(copy.deepcopy(parent_sym))
+                        added_syms.add(parent_id)
+                    except GenerateError:
+                        pass
             lib_sym_copy = copy.deepcopy(lib_sym)
             if part.get("comp_def") is None:  # passive: hide pin numbers
                 lib_sym_copy.hidePinNumbers = True
