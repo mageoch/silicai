@@ -293,10 +293,8 @@ def resolve(
                 elif ptype == "capacitor":
                     add_passive("capacitor", _fmt_c(filt["capacitance"]), from_net, to_net)
                 elif ptype in ("ferrite_bead", "inductor"):
-                    add_passive("inductor",
-                                f"{filt.get('impedance_at_100mhz', filt.get('inductance', {})).get('value', '?')}"
-                                f"{filt.get('impedance_at_100mhz', filt.get('inductance', {})).get('unit', '')}",
-                                from_net, to_net)
+                    l_val = filt.get("impedance_at_100mhz") or filt.get("inductance", {})
+                    add_passive("inductor", _fmt_l(l_val), from_net, to_net)
 
     # Bus-level pull-up resistors — one per declared signal in pull_ups.
     # For shared buses, skip if pull-ups were already placed by a previous circuit.
@@ -334,13 +332,24 @@ def resolve(
             "power_nets": power_nets, "local_nets": local_nets}
 
 
-_R_UNITS = {"kΩ": "k", "kOhm": "k", "Ω": "R", "Ohm": "R", "MΩ": "M"}
+_UNIT_NORM = {"uF": "µF", "uH": "µH", "Ohm": "Ω", "kOhm": "kΩ"}
+_C_LADDER  = [("pF", "p"), ("nF", "n"), ("µF", "u"), ("mF", "m")]
+_R_LADDER  = [("Ω", "R"),  ("kΩ", "k"), ("MΩ", "M")]
+_L_LADDER  = [("nH", "n"), ("µH", "u"), ("mH", "m"), ("H", "H")]
 
-def _fmt_r(r: dict) -> str:
-    return f"{r['value']}{_R_UNITS.get(r['unit'], r['unit'])}"
+def _fmt_eng(value: float, unit: str, ladder: list[tuple[str, str]]) -> str:
+    """Engineering notation: scale up when ≥ 1000, drop base unit, keep prefix."""
+    unit = _UNIT_NORM.get(unit, unit)
+    v    = float(value)
+    idx  = next((i for i, (u, _) in enumerate(ladder) if u == unit), 0)
+    while v >= 1000 and idx < len(ladder) - 1:
+        v /= 1000
+        idx += 1
+    return f"{v:g}{ladder[idx][1]}"
 
-def _fmt_c(c: dict) -> str:
-    return f"{c['value']}{c['unit']}"
+def _fmt_r(r: dict) -> str: return _fmt_eng(r["value"], r["unit"], _R_LADDER)
+def _fmt_c(c: dict) -> str: return _fmt_eng(c["value"], c["unit"], _C_LADDER)
+def _fmt_l(l: dict) -> str: return _fmt_eng(l["value"], l["unit"], _L_LADDER)
 
 
 # ── KiCad symbol loading ──────────────────────────────────────────────────────
@@ -349,7 +358,13 @@ _sym_lib_cache: dict[str, SymbolLib] = {}
 
 
 def _load_kicad_sym(kicad_sym: str, kicad_lib_path: Path):
-    """Return (deepcopy of Symbol, all pins list) from a KiCad standard library."""
+    """Return a deepcopy of a Symbol from a KiCad standard library.
+
+    If the symbol uses `extends`, the inheritance is flattened in-place:
+    the parent's properties are merged with the child's overrides so the
+    returned symbol has no `extends` and can be embedded in a schematic
+    lib_symbols section without requiring a parent entry.
+    """
     lib_name, sym_name = kicad_sym.split(":", 1)
     if lib_name not in _sym_lib_cache:
         lib_file = kicad_lib_path / f"{lib_name}.kicad_sym"
@@ -361,6 +376,28 @@ def _load_kicad_sym(kicad_sym: str, kicad_lib_path: Path):
     if sym is None:
         raise GenerateError(f"Symbol {sym_name!r} not found in {lib_name}.kicad_sym")
     sym = copy.deepcopy(sym)
+
+    # Flatten inheritance: merge parent geometry/pins into child overrides
+    if sym.extends:
+        parent_name = sym.extends
+        parent = next((s for s in lib.symbols if s.entryName == parent_name), None)
+        if parent:
+            parent = copy.deepcopy(parent)
+            # Child properties override parent; keep all parent props not in child
+            child_prop_keys = {p.key for p in sym.properties}
+            for prop in parent.properties:
+                if prop.key not in child_prop_keys:
+                    sym.properties.append(prop)
+            # Inherit geometry (units/pins) from parent, renaming unit prefixes
+            # from the parent name to the child name so KiCad accepts them.
+            if not sym.units:
+                for unit in parent.units:
+                    unit.entryName = unit.entryName.replace(parent_name, sym_name, 1)
+                sym.units = parent.units
+            if not sym.pins:
+                sym.pins = parent.pins
+        sym.extends = None
+
     sym.libraryNickname = lib_name
     return sym
 
@@ -376,15 +413,16 @@ def _all_pins(sym) -> list:
 # ── Placement ─────────────────────────────────────────────────────────────────
 
 # Rail bus layout constants (all in mm, on 1.27 mm KiCad grid)
-_BUS_START_X   = 20.32  # left origin of the bus section       (16 × 1.27)
-_BUS_START_Y   = 30.48  # Y centre of the first bus row        (24 × 1.27)
-_BUS_ROW_H     = 35.56  # vertical pitch between bus rows      (28 × 1.27)
-_CAP_STEP      = 10.16  # horizontal pitch between caps        ( 8 × 1.27)
-_BUS_LEAD      = 10.16  # space left of first cap (power sym)  ( 8 × 1.27)
-_BUS_TRAIL     = 5.08   # space right of last cap (GND sym)    ( 4 × 1.27)
+_BUS_CAP_X     = 25.4   # X of first decoupling cap            (20 × 1.27)
+_BUS_TOP_Y     = 25.4   # Y of top (power) bus wire, row 0     (20 × 1.27)
+_BUS_BOT_Y     = 38.1   # Y of bottom (GND) bus wire, row 0   (30 × 1.27)
+_BUS_ROW_H     = 25.4   # vertical pitch between bus rows      (20 × 1.27)
+_CAP_STEP      = 12.7   # horizontal pitch between caps        (10 × 1.27)
+_BUS_LEAD      = 12.7   # X space from power sym to first cap  (10 × 1.27)
+_BUS_TRAIL     = 6.35   # X space from last cap to GND sym     ( 5 × 1.27)
 _CAP_PIN_OFF   = 3.81   # Device:C pin tip offset from centre  (verified from kicad_sym)
 _BUS_TO_IC_GAP = 50.8   # horizontal gap: bus right edge → IC  (40 × 1.27)
-_PASS_STEP     = 25.4   # vertical pitch between other passives (20 × 1.27)
+_BUS_HALF_H    = (_BUS_BOT_Y - _BUS_TOP_Y) / 2  # 6.35 — cap centre to either wire
 
 
 def _place(
@@ -396,11 +434,10 @@ def _place(
     Returns:
         placed    – list of (part, x, y)
         bus_specs – one entry per rail group:
-                    {"net": str, "gnd": str,
-                     "x_pwr": float,   "x_top_r": float,
-                     "x_bot_l": float, "x_gnd": float, "y": float}
-                    x_pwr/x_top_r span the top (supply) wire;
-                    x_bot_l/x_gnd span the bottom (GND) wire.
+                    {"net", "gnd", "x_pwr", "x_top_r", "x_bot_l", "x_gnd",
+                     "y_top", "y_bot", "y_cap"}
+                    y_top/y_bot are the horizontal wire Y coords;
+                    y_cap is the cap centre (midpoint between them).
     """
     ics            = [p for p in parts if p.get("comp_def") is not None]
     rail_caps      = [p for p in parts if p.get("comp_def") is None and "rail_group" in p]
@@ -414,40 +451,46 @@ def _place(
     for cap in rail_caps:
         groups.setdefault(cap["rail_group"], []).append(cap)
 
-    bus_y = _BUS_START_Y
-    rightmost_x = _BUS_START_X
-    for net, caps in groups.items():
-        first_x = _BUS_START_X + _BUS_LEAD
+    rightmost_x = _BUS_CAP_X
+    for row_idx, (net, caps) in enumerate(groups.items()):
+        y_top = _BUS_TOP_Y + row_idx * _BUS_ROW_H
+        y_bot = _BUS_BOT_Y + row_idx * _BUS_ROW_H
+        y_cap = y_top + _BUS_HALF_H          # cap centre, equidistant from both wires
+
+        first_x = _BUS_CAP_X
         for i, cap in enumerate(caps):
-            placed.append((cap, first_x + i * _CAP_STEP, bus_y))
+            placed.append((cap, first_x + i * _CAP_STEP, y_cap))
         last_x = first_x + (len(caps) - 1) * _CAP_STEP
-        x_pwr  = _BUS_START_X          # power symbol at left of top wire
-        x_gnd  = last_x + _BUS_TRAIL   # GND symbol at right of bottom wire
+        x_pwr  = first_x - _BUS_LEAD        # power symbol left of first cap
+        x_gnd  = last_x  + _BUS_TRAIL       # GND symbol right of last cap
         bus_specs.append({
             "net":     net,
             "gnd":     caps[0]["pin_nets"]["2"],
-            "x_pwr":   x_pwr,    # top wire left end (= power symbol position)
-            "x_top_r": last_x,   # top wire right end (= last cap pin 1)
-            "x_bot_l": first_x,  # bottom wire left end (= first cap pin 2)
-            "x_gnd":   x_gnd,    # bottom wire right end (= GND symbol position)
-            "y":       bus_y,
+            "x_pwr":   x_pwr,
+            "x_top_r": last_x,
+            "x_bot_l": first_x,
+            "x_gnd":   x_gnd,
+            "y_top":   y_top,
+            "y_bot":   y_bot,
+            "y_cap":   y_cap,
         })
         rightmost_x = max(rightmost_x, x_gnd)
-        bus_y += _BUS_ROW_H
 
-    # ── ICs (right of bus section, below the last bus row) ────────────────────
+    n_rows = len(groups)
+    last_bot_y = _BUS_BOT_Y + max(0, n_rows - 1) * _BUS_ROW_H
+
+    # ── ICs (right of bus section) ────────────────────────────────────────────
     ic_x = rightmost_x + _BUS_TO_IC_GAP
-    ic_y = bus_y + 30.48  # 24 grid units below last bus row
+    ic_y = last_bot_y + 30.48
     for ic in ics:
         placed.append((ic, ic_x, ic_y))
         ic_y += 200.0
 
     # ── Other passives (grid below bus rows, same x-extent as rails) ──────────
-    pass_start_x = _BUS_START_X + _BUS_LEAD
-    pass_start_y = bus_y + 30.48  # 24 grid units below last bus row
-    # How many passives fit per row without exceeding the widest bus row
+    pass_start_x = _BUS_CAP_X
+    pass_start_y = last_bot_y + 30.48
     pass_per_row = max(1, int((rightmost_x - _BUS_TRAIL - pass_start_x) / _CAP_STEP) + 1)
-    _PASS_ROW_H = 20.32  # 16 grid units — row pitch for the passive grid
+    _PASS_ROW_H  = 20.32
     for i, p in enumerate(other_passives):
         col = i % pass_per_row
         row = i // pass_per_row
@@ -591,16 +634,6 @@ def write_kicad_sch(resolved: dict, output: Path, kicad_lib_path: Path) -> None:
 
         # Add to lib_symbols once per unique symbol
         if kicad_sym not in added_syms:
-            # If this symbol extends a parent, embed the parent first
-            if lib_sym.extends:
-                parent_id = f"{kicad_sym.split(':')[0]}:{lib_sym.extends}"
-                if parent_id not in added_syms:
-                    try:
-                        parent_sym = _load_kicad_sym(parent_id, kicad_lib_path)
-                        sch.libSymbols.append(copy.deepcopy(parent_sym))
-                        added_syms.add(parent_id)
-                    except GenerateError:
-                        pass
             lib_sym_copy = copy.deepcopy(lib_sym)
             if part.get("comp_def") is None:  # passive: hide pin numbers
                 lib_sym_copy.hidePinNumbers = True
@@ -635,15 +668,12 @@ def write_kicad_sch(resolved: dict, output: Path, kicad_lib_path: Path) -> None:
                     prop.effects = Effects(font=Font(height=1.27, width=1.27))
                 prop.effects.hide = True
 
-        # Add a visible "Pin" annotation for passives generated from a specific IC pin.
-        # Rotated 90° CW (angle=270) below the bottom bus wire so it reads downward
-        # and takes minimal horizontal space — avoids overlap in dense bus rows.
-        if "pin_annotation" in part:
+        # Pin annotation for rail-bus caps: rotated text below the bottom bus wire.
+        # Skipped for other passives — their GlobalLabels already identify the net.
+        if "pin_annotation" in part and "rail_group" in part:
             ann = Property(key="Pin", value=part["pin_annotation"])
             ann.id = len(inst.properties)
-            # Anchor at top of vertical text (angle=270 → text reads top-to-bottom).
-            # Top of label = 1 grid unit (1.27 mm) below the GND bus wire (pin 2).
-            ann.position = Position(X=cx, Y=cy + _CAP_PIN_OFF + 1.27, angle=270)
+            ann.position = Position(X=cx, Y=cy + _BUS_HALF_H + 1.27, angle=270)
             ann.effects = Effects(font=Font(height=1.0, width=1.0))
             ann.effects.justify = Justify(horizontally="left")
             inst.properties.append(ann)
@@ -731,29 +761,31 @@ def write_kicad_sch(resolved: dict, output: Path, kicad_lib_path: Path) -> None:
                 lbl.uuid = str(uuid.uuid4())
                 sch.globalLabels.append(lbl)
 
-    # ── Horizontal rail bus wires + junction markers ──────────────────────────
+    # ── Horizontal rail bus wires + vertical stubs + junction markers ─────────
     for bus in bus_specs:
-        top_y = bus["y"] - _CAP_PIN_OFF
-        bot_y = bus["y"] + _CAP_PIN_OFF
-        first_x = bus["x_bot_l"]  # first cap x (= bottom wire left endpoint)
-        last_x  = bus["x_top_r"]  # last cap x  (= top wire right endpoint)
+        top_y   = bus["y_top"]
+        bot_y   = bus["y_bot"]
+        cap_y   = bus["y_cap"]
+        first_x = bus["x_bot_l"]
+        last_x  = bus["x_top_r"]
 
-        # Top wire: power symbol → last cap's pin 1 (does NOT extend past last cap)
-        sch.graphicalItems.append(_make_wire(bus["x_pwr"], top_y, last_x, top_y))
-        # Bottom wire: first cap's pin 2 → GND symbol (does NOT extend before first cap)
-        sch.graphicalItems.append(_make_wire(first_x, bot_y, bus["x_gnd"], bot_y))
+        # Horizontal bus wires
+        sch.graphicalItems.append(_make_wire(bus["x_pwr"], top_y, last_x,        top_y))
+        sch.graphicalItems.append(_make_wire(first_x,      bot_y, bus["x_gnd"],  bot_y))
 
-        # Explicit junctions at T-intersections (KiCad requires them for pins on wire)
         n_caps = int(round((last_x - first_x) / _CAP_STEP)) + 1
         for i in range(n_caps):
             cap_x = first_x + i * _CAP_STEP
-            # Top wire: every cap except the last (its pin IS the right wire endpoint)
+            # Vertical stubs connecting cap pins to bus wires
+            sch.graphicalItems.append(_make_wire(cap_x, top_y, cap_x, cap_y - _CAP_PIN_OFF))
+            sch.graphicalItems.append(_make_wire(cap_x, cap_y + _CAP_PIN_OFF, cap_x, bot_y))
+            # Junctions at T-intersections on top wire (not at right endpoint)
             if i < n_caps - 1:
                 j = Junction()
                 j.position = Position(X=cap_x, Y=top_y)
                 j.uuid = str(uuid.uuid4())
                 sch.junctions.append(j)
-            # Bottom wire: every cap except the first (its pin IS the left wire endpoint)
+            # Junctions at T-intersections on bottom wire (not at left endpoint)
             if i > 0:
                 j = Junction()
                 j.position = Position(X=cap_x, Y=bot_y)
