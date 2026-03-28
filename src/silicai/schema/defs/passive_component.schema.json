@@ -17,11 +17,26 @@
     "impedance_at_100mhz": { "$ref": "measured_value.schema.json", "description": "Impedance at 100 MHz (for ferrite beads)" },
     "voltage_rating":      { "$ref": "measured_value.schema.json", "description": "Maximum rated voltage" },
     "current_rating":      { "$ref": "measured_value.schema.json", "description": "Maximum rated continuous current" },
-    "esr":                 { "$ref": "measured_value.schema.json", "description": "Equivalent series resistance (for capacitors)" },
+    "esr":                 { "$ref": "measured_value.schema.json", "description": "Equivalent series resistance (max, for capacitors and crystals)" },
+    "frequency":           { "$ref": "measured_value.schema.json", "description": "Nominal oscillation frequency (for crystals)" },
+    "frequency_tolerance": { "$ref": "measured_value.schema.json", "description": "Frequency tolerance (for crystals, unit: ppm)" },
+    "load_capacitance":    { "$ref": "measured_value.schema.json", "description": "Specified load capacitance (for crystals, unit: pF)" },
     "dielectric": {
       "type": "array",
       "description": "Acceptable capacitor dielectrics in order of preference (e.g. [X5R, X7R])",
       "items": { "type": "string" }
+    },
+    "recommended_mpn": {
+      "type": "string",
+      "description": "Specific manufacturer part number recommended by the IC datasheet or design guide. Deviating requires re-validation."
+    },
+    "package": {
+      "type": "string",
+      "description": "Recommended component package / footprint (e.g. '0402', '0806')"
+    },
+    "condition": {
+      "type": "string",
+      "description": "Design condition under which this component or value applies (e.g. 'IOVDD=3.3V'). If the condition is not met the component must be re-evaluated."
     },
     "placement": {
       "type": "string",
