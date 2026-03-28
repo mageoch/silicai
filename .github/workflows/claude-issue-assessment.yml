@@ -1,0 +1,30 @@
+name: Claude Issue Assessment
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  assess:
+    runs-on: ubuntu-latest
+    if: |
+      !contains(github.actor, '[bot]') &&
+      (github.event.comment.author_association == 'OWNER' ||
+       github.event.comment.author_association == 'MEMBER' ||
+       github.event.comment.author_association == 'COLLABORATOR')
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: anthropics/claude-code-action@beta
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          model: claude-haiku-4-5-20251001
+          trigger_phrase: "@claude"
+          prompt: |
+            A GitHub issue requires your assessment. Please analyze it and post a comment with:
+            - **Type**: bug, feature request, question, or other
+            - **Complexity**: low / medium / high
+            - **Missing info**: anything needed to act on this issue
+            - **Suggested next steps**: what should happen next
