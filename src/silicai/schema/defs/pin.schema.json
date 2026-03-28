@@ -29,9 +29,9 @@
       "description": "Alternate peripheral functions available when this pin is configured as GPIO",
       "items": { "$ref": "alternate_function.schema.json" }
     },
-    "required_external": {
+    "externals": {
       "type": "array",
-      "description": "Passive components that must be placed externally for this pin to operate correctly (e.g. pull-up resistors, bypass capacitors)",
+      "description": "External components associated with this pin. Set required: true on each item that is mandatory for correct operation; omit or set false for optional components (e.g. debug buttons, optional filters).",
       "items": { "$ref": "passive_component.schema.json" }
     },
     "decoupling": {

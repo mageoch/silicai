@@ -9,7 +9,11 @@
     "type": {
       "type": "string",
       "description": "Component type",
-      "enum": ["capacitor", "resistor", "ferrite_bead", "inductor", "crystal", "diode"]
+      "enum": ["capacitor", "resistor", "ferrite_bead", "inductor", "crystal", "diode", "switch"]
+    },
+    "required": {
+      "type": "boolean",
+      "description": "True if this component is mandatory for correct operation. False or absent means the component is optional (e.g. a debug button, an optional filter)."
     },
     "resistance":          { "$ref": "measured_value.schema.json", "description": "Resistance value (for resistors and pull-ups)" },
     "capacitance":         { "$ref": "measured_value.schema.json", "description": "Capacitance value (for capacitors)" },

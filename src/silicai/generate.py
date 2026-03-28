@@ -136,7 +136,7 @@ def resolve(
         inst_rail_overrides = inst.get("rails", {})
         rail_net_map = {r["id"]: inst_rail_overrides.get(r["id"], r["net"])
                         for r in comp.get("rails", [])}
-        # Reverse map to remap required_external.to references that use the
+        # Reverse map to remap externals.to references that use the
         # component's default rail net name.
         default_to_actual = {r["net"]: rail_net_map[r["id"]]
                              for r in comp.get("rails", [])}
@@ -179,7 +179,7 @@ def resolve(
                     break
 
         # Map component pin names → bus net names, and pin name → bus_id for
-        # deduplication of bus-scoped required_external passives.
+        # deduplication of bus-scoped externals passives.
         iface_nets: dict[str, str] = {}
         pin_to_bus: dict[str, str] = {}
         for bus_conn in inst.get("buses", []):
@@ -223,11 +223,13 @@ def resolve(
 
         parts.append({"ref": ref, "mpn": mpn, "comp_def": comp, "pin_nets": pin_nets})
 
-        # Required externals on pins
+        # Externals on pins (required: true items only)
         for p in comp["pins"]:
             pin_net = pin_nets[p["name"]]
             pin_label = f"{p['name']}[{p['number']}]"
-            for ext in p.get("required_external", []):
+            for ext in p.get("externals", []):
+                if not ext.get("required", False):
+                    continue
                 scope = ext.get("scope", "component")
                 ext_to = default_to_actual.get(ext["to"], ext["to"])
                 # Skip self-loops: pin directly tied to the target by pin_config
@@ -270,6 +272,31 @@ def resolve(
                     add_passive("resistor", _fmt_r(decoup["resistance"]),
                                 pin_net, to_net,
                                 pin_annotation=label)
+
+        # Rail input filters — e.g. RC filter between a supply and a sensitive rail.
+        # 'from'/'to' net names are resolved through the rail net map so that circuit-level
+        # rail overrides (e.g. vreg_vin → +3V3) are respected.
+        rail_default_to_actual: dict[str, str] = {
+            r["net"]: rail_net_map.get(r["id"], r["net"])
+            for r in comp.get("rails", [])
+        }
+        for rail in comp.get("rails", []):
+            rnet = rail_net_map.get(rail["id"], rail["net"])
+            for filt in rail.get("input_filter", []):
+                ptype    = filt["type"]
+                from_raw = filt.get("from", rnet)
+                to_raw   = filt.get("to", rnet)
+                from_net = rail_default_to_actual.get(from_raw, from_raw)
+                to_net   = rail_default_to_actual.get(to_raw, to_raw)
+                if ptype == "resistor":
+                    add_passive("resistor", _fmt_r(filt["resistance"]), from_net, to_net)
+                elif ptype == "capacitor":
+                    add_passive("capacitor", _fmt_c(filt["capacitance"]), from_net, to_net)
+                elif ptype in ("ferrite_bead", "inductor"):
+                    add_passive("inductor",
+                                f"{filt.get('impedance_at_100mhz', filt.get('inductance', {})).get('value', '?')}"
+                                f"{filt.get('impedance_at_100mhz', filt.get('inductance', {})).get('unit', '')}",
+                                from_net, to_net)
 
     # Bus-level pull-up resistors — one per declared signal in pull_ups.
     # For shared buses, skip if pull-ups were already placed by a previous circuit.

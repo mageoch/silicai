@@ -46,9 +46,9 @@ class TestPinConfig:
         assert u1_nets["ALERT"] == "GND"
 
     def test_pin_config_degenerate_external_skipped(self):
-        """When a pin is tied directly to its required_external target, no passive is generated."""
+        """When a pin is tied directly to its externals target, no passive is generated."""
         r = _resolve("simple.yaml")
-        # ALERT has no required_external in the fixture, but if it did,
+        # ALERT has no externals in the fixture, but if it did,
         # a resistor from ALERT to GND would be skipped when ALERT IS GND.
         # Here we just verify no extra passives appear beyond what's expected.
         part_refs = [p["ref"] for p in r["parts"]]

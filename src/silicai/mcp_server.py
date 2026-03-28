@@ -333,8 +333,9 @@ component:
                                 # analog_in analog_out i2c_scl i2c_sda spi_sck spi_mosi
                                 # spi_miso spi_cs uart_tx uart_rx usb_dp usb_dm
                                 # swd_io swd_clk adc alert address_select enable interrupt pwm
-      required_external:
+      externals:
         - type: resistor
+          required: true
           resistance: { value: 4.7, unit: kΩ }
           to: VCC               # net name the other end connects to
           scope: bus            # bus: one shared pull-up per bus; component: one per IC
@@ -345,8 +346,9 @@ component:
       open_drain: true
       primary_function:
         type: i2c_sda
-      required_external:
+      externals:
         - type: resistor
+          required: true
           resistance: { value: 4.7, unit: kΩ }
           to: VCC
           scope: bus
@@ -370,8 +372,9 @@ component:
       primary_function:
         type: alert
         polarity: active_low
-      required_external:
+      externals:
         - type: resistor
+          required: true
           resistance: { value: 10, unit: kΩ }
           to: VCC
           scope: component
