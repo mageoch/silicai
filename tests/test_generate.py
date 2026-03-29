@@ -1,7 +1,9 @@
 """Tests for write_kicad_sch() — schematic output correctness."""
 import pytest
 from pathlib import Path
-from silicai.generate import resolve, write_kicad_sch, write_kicad_project, _net_priority
+from silicai.generate import resolve, _net_priority
+from silicai.kicad.writer import write_kicad_sch
+from silicai.kicad.project import write_kicad_project
 
 FIXTURES = Path(__file__).parent / "fixtures"
 COMP_LIB = [FIXTURES / "components"]

@@ -10,9 +10,11 @@ from jsonschema import Draft202012Validator
 from mcp.server.fastmcp import FastMCP
 
 from silicai.generate import (
-    GenerateError, find_component, load_config, resolve, write_kicad_sch, write_kicad_project,
+    GenerateError, find_component, load_config, resolve,
     _DEFAULT_KICAD_SYM, _BUILTIN_COMPONENTS,
 )
+from silicai.kicad.writer import write_kicad_sch
+from silicai.kicad.project import write_kicad_project
 from silicai.import_kicad import KiCadImportError, import_project
 from silicai.validate import build_registry, resolve_schema
 

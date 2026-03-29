@@ -22,7 +22,8 @@ KICAD_LIB = Path("/usr/share/kicad/symbols")
 
 def _generate_simple_sch(tmp_path: Path) -> Path:
     """Generate a KiCad schematic from the simple fixture circuit."""
-    from silicai.generate import resolve, write_kicad_sch
+    from silicai.generate import resolve
+    from silicai.kicad.writer import write_kicad_sch
     resolved = resolve(FIXTURES / "circuits" / "simple.yaml", COMP_LIB)
     out = tmp_path / "simple.kicad_sch"
     write_kicad_sch(resolved, out, KICAD_LIB)
