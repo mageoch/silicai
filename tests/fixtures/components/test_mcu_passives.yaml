@@ -1,0 +1,42 @@
+$schema: "https://mageoch.github.io/silicai/schema/component.schema.json"
+$schema_version: "0.1.0"
+
+component:
+  mpn: TEST_MCU_PASSIVES_001
+  manufacturer: Test Inc.
+  category: mcu
+  package: QFN-64
+  kicad_symbol: "MCU_RaspberryPi:RP2350A"
+
+  rails:
+    - id: dvdd
+      net: DVDD
+
+  pins:
+    - number: 63
+      name: VREG_LX
+      direction: output
+      externals:
+        - type: inductor
+          required: true
+          inductance: { value: 3.3, unit: µH }
+          to: DVDD
+    - number: 30
+      name: XIN
+      direction: input
+      externals:
+        - type: crystal
+          required: true
+          frequency: { value: 12, unit: MHz }
+          to: U1_XOUT
+    - number: 31
+      name: XOUT
+      direction: output
+    - number: 1
+      name: DVDD
+      direction: power_in
+      rail: dvdd
+    - number: 2
+      name: GND
+      direction: power_in
+      net: GND

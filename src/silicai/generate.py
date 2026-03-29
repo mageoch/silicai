@@ -310,7 +310,9 @@ def resolve(
         # Caps on a rail are grouped together for the horizontal bus layout.
         for p in comp["pins"]:
             for decoup in p.get("decoupling", []):
-                pin_net = pin_nets.get(p["name"])
+                pin_net = pin_nets.get(p["name"]) or pin_nets.get(str(p["number"]))
+                if pin_net is None:
+                    continue
                 to_net  = decoup.get("to", "GND")
                 pin_num = int(p["number"]) if str(p["number"]).isdigit() else 0
                 rail_id = p.get("rail")
