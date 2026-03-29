@@ -25,6 +25,9 @@
     "frequency":           { "$ref": "measured_value.schema.json", "description": "Nominal oscillation frequency (for crystals)" },
     "frequency_tolerance": { "$ref": "measured_value.schema.json", "description": "Frequency tolerance (for crystals, unit: ppm)" },
     "load_capacitance":    { "$ref": "measured_value.schema.json", "description": "Specified load capacitance (for crystals, unit: pF)" },
+    "series_r":            { "$ref": "measured_value.schema.json", "description": "Series resistor (Rs) in the oscillator drive path (for crystals only). Rs is placed in series between the MCU oscillator output (XOUT) and the crystal, limiting drive current. The crystal's XOUT-side pin is placed on an intermediate net; Rs bridges that net back to the XOUT pin net." },
+    "xin_cap":             { "$ref": "measured_value.schema.json", "description": "Load capacitor on the crystal XIN side, placed between the crystal's sense-side terminal (same net as the MCU XIN pin) and GND." },
+    "xout_cap":            { "$ref": "measured_value.schema.json", "description": "Load capacitor on the crystal XOUT side, placed between the crystal's drive-side terminal and GND. Used together with series_r when the XOUT cap must sit on the crystal side of Rs (not on the MCU XOUT pin directly)." },
     "dielectric": {
       "type": "array",
       "description": "Acceptable capacitor dielectrics in order of preference (e.g. [X5R, X7R])",

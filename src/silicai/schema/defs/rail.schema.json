@@ -15,7 +15,7 @@
     },
     "input_filter": {
       "type": "array",
-      "description": "Passive filter components placed on the input of this rail (e.g. ferrite bead)",
+      "description": "Ordered list of passive components forming the filter network between the source supply and this rail net. Use 'from' on the first series element to name the source net; the rail net itself is the output node. Shunt elements use 'to: GND'. Example: +3V3 → 33Ω (from: VREG_VIN) → VREG_AVDD → 4.7µF (to: GND).",
       "items": { "$ref": "passive_component.schema.json" }
     },
     "bulk_decoupling": {
