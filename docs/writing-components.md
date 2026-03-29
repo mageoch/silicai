@@ -68,19 +68,36 @@ Common function types include `i2c_scl`, `i2c_sda`, `spi_clk`, `spi_mosi`, `uart
 
 ### Required externals
 
-If the datasheet requires an external component on a pin (pull-up, filter capacitor, address resistor), declare it under `required_external`. SilicAI will place it automatically:
+If the datasheet requires an external component on a pin (pull-up, filter capacitor, address resistor), declare it under `externals` with `required: true`. SilicAI will place it automatically:
 
 ```yaml
   - number: 3
     name: ALERT
     direction: output
     open_drain: true
-    required_external:
+    externals:
       - type: resistor
+        required: true
         resistance: { value: 10, unit: kΩ }
         from: ALERT
         to: VCC_3V3
         scope: component   # place once per component instance
+```
+
+For crystal oscillator circuits, declare the crystal with its load capacitors and optional series resistor:
+
+```yaml
+  - number: 30
+    name: XIN
+    direction: input
+    externals:
+      - type: crystal
+        required: true
+        frequency: { value: 12, unit: MHz }
+        to: XOUT             # net name of the XOUT pin
+        xin_cap: { value: 15, unit: pF }
+        xout_cap: { value: 15, unit: pF }
+        series_r: { value: 33, unit: Ω }   # optional drive-current limiting resistor
 ```
 
 For address-select pins, declare the address options so the generator can pick the right connection:
@@ -106,15 +123,47 @@ Rails group all power-supply pins and their decoupling requirements:
 rails:
   - id: vplus
     net: VCC_3V3           # default net name (can be overridden per circuit instance)
-    per_pin_decoupling:
+    bulk_decoupling:
+      - type: capacitor
+        capacitance: { value: 10, unit: µF }
+        placement: nearby
+```
+
+The `id` is how the circuit references this rail (e.g. `rails: {vplus: +3V3}`). The `net` is the default net name used if the circuit doesn't override it.
+
+Per-pin decoupling caps (one cap per supply pin, placed close) are declared on the pin itself under `decoupling`:
+
+```yaml
+pins:
+  - number: 5
+    name: VDD
+    direction: power_in
+    rail: vplus
+    decoupling:
       - type: capacitor
         capacitance: { value: 100, unit: nF }
         voltage_rating: { value: 10, unit: V }
         dielectric: [X5R, X7R]
-        placement: close   # place this cap immediately next to the pin
+        placement: close
 ```
 
-The `id` is how the circuit references this rail (e.g. `rails: {vplus: +3V3}`). The `net` is the default net name used if the circuit doesn't override it.
+For rails that require an RC or LC input filter (e.g. an SMPS output feeding a sensitive analog rail), declare the filter chain under `input_filter`. List components in order from source to rail: series elements first, then shunt elements to GND:
+
+```yaml
+rails:
+  - id: vreg_avdd
+    net: VREG_AVDD
+    input_filter:
+      - type: resistor
+        resistance: { value: 33, unit: Ω }
+        from: +3V3            # source net
+        to: VREG_AVDD         # rail net (output node)
+      - type: capacitor
+        capacitance: { value: 4.7, unit: µF }
+        to: GND               # shunt to GND
+```
+
+SilicAI renders this as a horizontal L-filter: `+3V3 ──[R]──┬── VREG_AVDD` with the capacitor dropping to GND at the junction.
 
 ## Interfaces
 

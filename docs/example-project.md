@@ -64,7 +64,7 @@ project:
 
 ## The sensor circuit
 
-`circuits/tmp117.yaml` places one TMP117 instance. The `address: "0x48"` field tells SilicAI to connect ADD0 to GND (from the component's address-select options table). The pull-up on ALERT is placed automatically from the component's `required_external` definition.
+`circuits/tmp117.yaml` places one TMP117 instance. The `address: "0x48"` field tells SilicAI to connect ADD0 to GND (from the component's address-select options table). The pull-up on ALERT is placed automatically from the component's `externals` definition.
 
 ```yaml
 circuit:
