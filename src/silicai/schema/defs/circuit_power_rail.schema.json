@@ -6,7 +6,8 @@
   "type": "object",
   "required": ["net"],
   "properties": {
-    "net": { "type": "string", "description": "Net name matching a global net definition (e.g. VCC_3V3, GND)" }
+    "net": { "type": "string", "description": "Net name matching a global net definition (e.g. VCC_3V3, GND)" },
+    "description": { "type": "string", "description": "Human-readable description of this power rail's purpose" }
   },
   "additionalProperties": false
 }
