@@ -28,6 +28,11 @@
           "type": "array",
           "description": "Component instances that make up this circuit",
           "items": { "$ref": "defs/circuit_instance.schema.json" }
+        },
+        "groups": {
+          "type": "array",
+          "description": "Logical groupings of instances sharing a common purpose",
+          "items": { "$ref": "defs/circuit_group.schema.json" }
         }
       }
     }

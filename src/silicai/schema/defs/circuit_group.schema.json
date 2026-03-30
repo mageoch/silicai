@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mageoch.github.io/silicai/schema/defs/circuit_group.schema.json",
+  "title": "Circuit Group",
+  "description": "A logical grouping of component instances sharing a common purpose",
+  "type": "object",
+  "required": ["name", "instances"],
+  "properties": {
+    "name": { "type": "string", "description": "Short identifier for this group (e.g. shield_protection)" },
+    "description": { "type": "string", "description": "Human-readable description of the group's purpose" },
+    "instances": {
+      "type": "array",
+      "description": "Reference designators of the instances belonging to this group",
+      "items": { "type": "string" },
+      "minItems": 1
+    }
+  },
+  "additionalProperties": false
+}
